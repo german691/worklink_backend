@@ -4,9 +4,25 @@ const { createNewUser, autenticateUser } = require("./controller");
 const auth = require("./../../middleware/auth");
 const { sendVerificationOTPEmail } = require("./../../domains/email_verification/controller");
 
-// Ruta protegida de ejemplo
-router.get("/private_data", auth, (req, res) => {
-    res.status(200).send(`Private route of ${req.currentUser.email}`)
+router.get("/create_post", auth, (req, res) => {
+    try {
+        let { postBody, postTitle, postImg } = req.body;
+
+        if (!(postBody && postTitle && postImg)) {
+            throw Error("Empty postBody or postTitle");
+        } 
+
+        if (postBody.lenght > 300) {
+            throw Error("postTitle must be less than 300 chars");
+        }
+
+        if (postTitle.lenght > 33) {
+            throw Error("postTitle must be less than 33 chars");
+        }        
+
+    } catch (error) {
+        res.status(400).json(error.message);
+    }
 });
 
 //Login
@@ -33,11 +49,12 @@ router.post("/signup", async (req, res) => {
     const alphabethRegex = /^[a-zA-Z ]*$/;
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     try {
-        let { name, email, password } = req.body;
+        let { name, email, password, userType } = req.body;
 
         name = name.trim();
         email = email.trim();
         password = password.trim(); 
+        userType = userType.trim(); 
 
         if (!(name && email && password)) {
             throw Error("Empty input fields");
@@ -52,6 +69,7 @@ router.post("/signup", async (req, res) => {
                 name,
                 email,
                 password,
+                userType
             });
             await sendVerificationOTPEmail(email);
             res.status(200).json(newUser);

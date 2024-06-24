@@ -36,7 +36,7 @@ const autenticateUser = async (data) => {
 
 const createNewUser = async (data) => {
     try {
-        const { name, email, password } = data;
+        const { name, email, password, userType } = data;
 
         //vemos si el usuario ya existe
         const existingUser = await User.findOne({ email });
@@ -45,18 +45,35 @@ const createNewUser = async (data) => {
             throw Error("User with the provided email already exists");
         }
 
+        const userTypes = ['worker', 'client'];
+
+        if (!userTypes.includes(userType)) {
+            throw Error(`User must be a "worker" or a "client, got ${userType}"`);
+        }
+
         //si el usuario no existe, tonces hasheamos el pwd para guardarlo en mongo
         const hashedPassword = await hashData(password);
         const newUser = new User({
             name,
             email,
             password: hashedPassword,
+            userType,
         });
 
         //guardamos el usuario
         const createdUser = await newUser.save();
 
         return createdUser;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const createPost = async (data) => {
+    try {
+        let { postBody, postTitle, postImg } = data;
+
+        
     } catch (error) {
         throw error;
     }
