@@ -2,43 +2,57 @@ const User = require("./model");
 const { hashData, verifyHashedData } = require("./../../util/hashData");
 const createToken = require("./../../util/createToken");
 
-const autenticateUser = async (data) => {
+
+const authenticateUser = async (data) => {
     try {
-        const { email, password } = data;
-        const fetchedUser = await User.findOne({ email });
+        const { username, email, password } = data;
+
+        if (!(username || email)) {
+            throw new Error('Expected a username or email');
+        }
+        
+        if (username && email) {
+            throw new Error('Expected only a username or email, not both');
+        }
+
+        let fetchedUser;
+
+        if (username) {
+            fetchedUser = await User.findOne({ username });
+        } else if (email) {
+            fetchedUser = await User.findOne({ email });
+        }
 
         if (!fetchedUser) {
-            throw Error(`Invalid credentials (no user found with email ${email})`);
+            throw new Error(`Invalid credentials (no user found with ${username ? 'username ' + username : 'email ' + email})`);
         }
 
         if (!fetchedUser.verified) {
-            throw Error(`Email hasn't been verified yet. Check your inbox.`);
+            throw new Error("Email hasn't been verified yet. Check your inbox.");
         }
 
         const hashedPassword = fetchedUser.password;
-
         const passwordMatch = await verifyHashedData(password, hashedPassword);
+
         if (!passwordMatch) {
-            throw Error("Incorrect password")
+            throw new Error("Incorrect password");
         }
 
-        //Acá porfinnn creamos el token para el usuario
-        //Primero obtenemos el id del usuario y el email como parametros para pasarle al creador de tokens
-        const tokenData = { userId: fetchedUser._id, email };
-        //De ahi creamos el token, y lo asociamos al usuario que fue encontrado
+        const tokenData = { userId: fetchedUser._id, username: fetchedUser.username, email: fetchedUser.email };
         const token = await createToken(tokenData);
+
         fetchedUser.token = token;
+
         return fetchedUser;
     } catch (error) {
         throw error;
     }
-}
+};
 
 const createNewUser = async (data) => {
     try {
         const { name, email, password, userType } = data;
 
-        //vemos si el usuario ya existe
         const existingUser = await User.findOne({ email });
 
         if (existingUser) {
@@ -51,7 +65,6 @@ const createNewUser = async (data) => {
             throw Error(`User must be a "worker" or a "client, got ${userType}"`);
         }
 
-        //si el usuario no existe, tonces hasheamos el pwd para guardarlo en mongo
         const hashedPassword = await hashData(password);
         const newUser = new User({
             name,
@@ -60,7 +73,6 @@ const createNewUser = async (data) => {
             userType,
         });
 
-        //guardamos el usuario
         const createdUser = await newUser.save();
 
         return createdUser;
@@ -69,14 +81,4 @@ const createNewUser = async (data) => {
     }
 };
 
-const createPost = async (data) => {
-    try {
-        let { postBody, postTitle, postImg } = data;
-
-        
-    } catch (error) {
-        throw error;
-    }
-};
-
-module.exports = { createNewUser, autenticateUser };
+module.exports = { createNewUser, authenticateUser };

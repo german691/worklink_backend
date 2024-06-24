@@ -8,8 +8,6 @@ const verifyUserEmail = async ({ email, otp }) => {
             throw Error("Invalid code passed. Check your inbox.")
         }
 
-        // actualizar el user record para que muestre "verificado"
-
         await User.updateOne({ email }, { verified: true });
 
         await deleteOTP(email);
@@ -21,7 +19,6 @@ const verifyUserEmail = async ({ email, otp }) => {
 
 const sendVerificationOTPEmail = async (email) => {
     try {
-        // vemos si existe el usuario
         const existingUser = await User.findOne({ email });
         if (!existingUser) {
             throw Error("There is no user for the provided email.");

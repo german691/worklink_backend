@@ -1,33 +1,16 @@
 const express = require("express");
 const router = express.Router();
-const { createNewUser, autenticateUser } = require("./controller");
+const { createNewUser, authenticateUser } = require("./controller");
 const auth = require("./../../middleware/auth");
 const { sendVerificationOTPEmail } = require("./../../domains/email_verification/controller");
 
-router.get("/create_post", auth, (req, res) => {
-    try {
-        let { postBody, postTitle, postImg } = req.body;
-
-        if (!(postBody && postTitle && postImg)) {
-            throw Error("Empty postBody or postTitle");
-        } 
-
-        if (postBody.lenght > 300) {
-            throw Error("postTitle must be less than 300 chars");
-        }
-
-        if (postTitle.lenght > 33) {
-            throw Error("postTitle must be less than 33 chars");
-        }        
-
-    } catch (error) {
-        res.status(400).json(error.message);
-    }
-});
-
-//Login
 router.post("/login", async (req, res) => {
     try {
+        if (req.currentUser.userId) {
+            res.status(200).send("user session is active");
+            return;
+        }
+
         let { email, password } = req.body;
         email = email.trim();
         password = password.trim();
@@ -36,37 +19,41 @@ router.post("/login", async (req, res) => {
             throw Error("Empty input fields");
         } 
 
-        const autenticatedUser = await autenticateUser({email, password});
+        const authenticatedUser = await authenticateUser({email, password});
 
-        res.status(200).json(autenticatedUser);
+        res.status(200).json(authenticatedUser);
     } catch (error) {
         res.status(400).json(error.message);
     }
 })
 
-//Signup
 router.post("/signup", async (req, res) => {
     const alphabethRegex = /^[a-zA-Z ]*$/;
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     try {
-        let { name, email, password, userType } = req.body;
+        if (req.currentUser.userId) {
+            res.status(200).send("user session is active");
+            return;
+        }
 
-        name = name.trim();
+        let { username, email, password, userType } = req.body;
+
+        username = username.trim();
         email = email.trim();
         password = password.trim(); 
         userType = userType.trim(); 
 
-        if (!(name && email && password)) {
+        if (!(username && email && password)) {
             throw Error("Empty input fields");
-        } else if (!alphabethRegex.test(name)) {
-            throw Error("Name can only contain alphabet caracters")
+        } else if (!alphabethRegex.test(username)) {
+            throw Error("username can only contain alphabet caracters")
         } else if (!emailRegex.test(email)) {
             throw Error("Invalid email entered")
-        } else if (password.lenght < 8) {
+        } else if (password.length < 8) {
             throw Error("Password is too short")
         } else {
             const newUser = await createNewUser({
-                name,
+                username,
                 email,
                 password,
                 userType

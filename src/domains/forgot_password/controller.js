@@ -19,6 +19,7 @@ const sendPasswordResetOTPEmail = async (email) => {
             message: "Enter the code below to reset your password",
             duration: 1,
         };
+        
         const createdOTP = await sendOTP(otpDetails);
         return createdOTP;
     } catch (error) {
