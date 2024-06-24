@@ -1,28 +1,17 @@
 const express = require("express");
 const router = express.Router();
+const { sendNewJobListing } = require("./controller");
+const auth = require("./../../middleware/auth");
 
-router.post("/add", async (req, res) => {
+router.post("/add", auth, (req, res) => {
     try {
-        const { email, subject, message, duration } = req.body;
-        const createdOTP = await sendOTP({
-            email,
-            subject,
-            message,
-            duration, 
+        const { publisherID, title, body } = req.body;
+        const createdNewJobListing = sendNewJobListing({
+            publisherID, 
+            title, 
+            body
         });
-        res.status(200).json(createdOTP);
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
-});
-
-// ruta para verificar token OTP
-router.post("/verify", async (req, res) => {
-    try {
-        let { email, otp } = req.boby;
-        
-        const validOTP = await verifyOTP({ email, otp });
-        res.status(200).json({ valid: validOTP });
+        res.status(200).json(createdNewJobListing);
     } catch (error) {
         res.status(400).send(error.message);
     }
