@@ -6,14 +6,17 @@ const UserSchema = new Schema({
     username: { type: String, unique: true, required: true },
     email: { type: String, unique: true },
     password: { type: String, required: true },
-    token: { type: String, required: true },
     userType: { type: String, required: true }, // ["worker" || "client"]
     
     // datos post registro
     verified: { type: Boolean, default: false },
     name: { type: String, required: true },
     surname: { type: String, required: true },
+    dni: { type: String, required: true },
     birthdate: { type: Date, required: true }, 
+
+    // session token 
+    token: String,
 
     // opcionales:
     adress: String,
@@ -21,7 +24,6 @@ const UserSchema = new Schema({
 
     // perfil del usuario 
     info: String,
-
 
     // -------- a futuro
     // profileImg: String <-- No contiene una imágen como tal, sino la referencia 

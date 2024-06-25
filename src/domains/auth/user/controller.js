@@ -3,17 +3,9 @@ const { hashData, verifyHashedData } = require("./../../../util/hashData");
 const createToken = require("./../../../util/createToken");
 
 const authenticateUser = async (data) => {
+    const { username, email, password } = data
+
     try {
-        const { username, email, password } = data;
-
-        if (!(username || email)) {
-            throw new Error('Expected a username or email');
-        }
-        
-        if (username && email) {
-            throw new Error('Expected only a username or email, not both');
-        }
-
         let fetchedUser;
 
         if (username) {
@@ -56,28 +48,33 @@ const createNewUser = async (data) => {
             password, 
             userType,
             name,
-            surname,
+            surname, 
+            dni,
             birthdate,
         } = data;
 
-        const existingUser = await User.findOne({ email });
+        const existingEmail = await User.findOne({ email });
+        const existingUsername = await User.findOne({ username });
 
-        if (existingUser) {
-            throw Error("User with the provided email already exists");
-        }
+        if (existingEmail) throw Error("User with the provided email already exists");
+        if (existingUsername) throw Error("User with the provided username already exists");
 
-        const userTypes = ['worker', 'client'];
-
-        if (!userTypes.includes(userType)) {
-            throw Error(`User must be a "worker" or a "client, got ${userType}"`);
-        }
+        const newDate = await checkIfUnderage(birthdate);
 
         const hashedPassword = await hashData(password);
+
+        capitalizeName = name.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
+        capitalizeSurname = surname.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
+
         const newUser = new User({
-            name,
-            email,
-            password: hashedPassword,
+            username, 
+            email, 
+            password: hashedPassword, 
             userType,
+            name: capitalizeName,
+            surname: capitalizeSurname, 
+            dni,
+            birthdate: newDate,
         });
 
         const createdUser = await newUser.save();
@@ -88,4 +85,32 @@ const createNewUser = async (data) => {
     }
 };
 
-module.exports = { createNewUser, authenticateUser };
+const checkIfUnderage = async (birthdate) => {
+    try {
+        const birthdateObject = new Date(birthdate);
+
+        if (isNaN(birthdateObject.getTime())) {
+            throw new Error("Invalid birthdate value");
+        }
+
+        const currentDate = new Date();
+        
+        let age = currentDate.getFullYear() - birthdateObject.getFullYear();
+        const monthDifference = currentDate.getMonth() - birthdateObject.getMonth();
+        const dayDifference = currentDate.getDate() - birthdateObject.getDate();
+
+        if (monthDifference < 0 || (monthDifference === 0 && dayDifference < 0)) {
+            age--;
+        }
+
+        if (age < 21) {
+            throw new Error("User must be at least 21 years old");
+        }
+
+        return birthdateObject;
+    } catch (error) {
+        throw error;
+    }
+}
+
+module.exports = { createNewUser, authenticateUser, checkIfUnderage };

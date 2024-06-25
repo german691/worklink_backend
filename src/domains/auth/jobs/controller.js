@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Job = require('./model');
 const User = require('./../user/model');
 
@@ -9,11 +10,20 @@ const getJobs = async (data) => {
         const { page = 1, limit = 10, userId } = data;
         const skip = (page - 1) * limit;
 
-        let jobs , totalJobs;
+        let jobs, totalJobs;
 
         if (userId) {
-            jobs  = await Job.find({ userId }).skip(skip).limit(limit);
-            totalJobs = await Job.countDocuments({ userId });
+            if (!mongoose.Types.ObjectId.isValid(userId)) {
+              return res.status(400).send("Invalid userId format");
+            }
+            
+            const userExists = await User.find({ _id: userId });
+            if (!userExists) {
+              return res.status(404).send("User not found");
+            }
+
+            jobs  = await Job.find({ userId: userId }).skip(skip).limit(limit);
+            totalJobs = await Job.countDocuments({ userId: userId });
         } else {
             jobs  = await Job.find().skip(skip).limit(limit);
             totalJobs = await Job.countDocuments();
