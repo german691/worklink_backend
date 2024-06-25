@@ -1,7 +1,6 @@
 const User = require("./model");
-const { hashData, verifyHashedData } = require("./../../util/hashData");
-const createToken = require("./../../util/createToken");
-
+const { hashData, verifyHashedData } = require("./../../../util/hashData");
+const createToken = require("./../../../util/createToken");
 
 const authenticateUser = async (data) => {
     try {
@@ -51,7 +50,15 @@ const authenticateUser = async (data) => {
 
 const createNewUser = async (data) => {
     try {
-        const { name, email, password, userType } = data;
+        const { 
+            username, 
+            email, 
+            password, 
+            userType,
+            name,
+            surname,
+            birthdate,
+        } = data;
 
         const existingUser = await User.findOne({ email });
 

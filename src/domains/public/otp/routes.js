@@ -2,9 +2,6 @@ const express = require("express");
 const router = express.Router();
 const { sendOTP, verifyOTP } = require("./controller");
 
-// Verificación OTP
-
-// ruta para enviar token OTP
 router.post("/", async (req, res) => {
     try {
         const { email, subject, message, duration } = req.body;
@@ -20,7 +17,6 @@ router.post("/", async (req, res) => {
     }
 });
 
-// ruta para verificar token OTP
 router.post("/verify", async (req, res) => {
     try {
         let { email, otp } = req.boby;

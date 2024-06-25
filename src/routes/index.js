@@ -1,12 +1,17 @@
 const express = require("express");
 const router = express.Router();
 
-const jobsRoute = require("./../domains/jobs");
-const statusRoute = require("./../domains/status");
-const userRoutes = require("./../domains/user");
-const OTPRoutes = require("./../domains/otp");
-const EmailVerificationRoutes = require("./../domains/email_verification");
-const ForgotPasswordRoutes = require("./../domains/forgot_password");
+// admin --- no implementado
+
+// auth 
+const jobsRoute = require("./../domains/auth/jobs");
+const userRoutes = require("./../domains/auth/user");
+
+// public
+const statusRoute = require("./../domains/public/status");
+const OTPRoutes = require("./../domains/public/otp");
+const EmailVerificationRoutes = require("./../domains/public/email_verification");
+const ForgotPasswordRoutes = require("./../domains/public/forgot_password");
 
 router.use("/jobs", jobsRoute);
 router.use("/status", statusRoute);

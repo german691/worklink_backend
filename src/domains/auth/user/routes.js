@@ -1,16 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const { createNewUser, authenticateUser } = require("./controller");
-const auth = require("./../../middleware/auth");
-const { sendVerificationOTPEmail } = require("./../../domains/email_verification/controller");
+const auth = require("./../../../middleware/auth");
+const { sendVerificationOTPEmail } = require("./../../../domains/public/email_verification/controller");
 
 router.post("/login", async (req, res) => {
     try {
-        if (req.currentUser.userId) {
-            res.status(200).send("user session is active");
-            return;
-        }
-
         let { email, password } = req.body;
         email = email.trim();
         password = password.trim();
@@ -31,17 +26,21 @@ router.post("/signup", async (req, res) => {
     const alphabethRegex = /^[a-zA-Z ]*$/;
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     try {
-        if (req.currentUser.userId) {
-            res.status(200).send("user session is active");
-            return;
-        }
-
-        let { username, email, password, userType } = req.body;
+        let { 
+            username, 
+            email, 
+            password, 
+            userType,
+            name,
+            surname, 
+            birthdate,
+        } = req.body;
 
         username = username.trim();
         email = email.trim();
         password = password.trim(); 
         userType = userType.trim(); 
+        birthdate = birthdate.trim();
 
         if (!(username && email && password)) {
             throw Error("Empty input fields");
@@ -51,6 +50,8 @@ router.post("/signup", async (req, res) => {
             throw Error("Invalid email entered")
         } else if (password.length < 8) {
             throw Error("Password is too short")
+        } else if (password.length < 8){
+
         } else {
             const newUser = await createNewUser({
                 username,

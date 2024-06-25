@@ -1,6 +1,33 @@
 const Job = require('./model');
 const User = require('./../user/model');
 
+// GET methods para FRONT
+
+// traer trabajos de todos o según usuario
+const getJobs = async (data) => {
+    try {
+        const { page = 1, limit = 10, userId } = data;
+        const skip = (page - 1) * limit;
+
+        let jobs , totalJobs;
+
+        if (userId) {
+            jobs  = await Job.find({ userId }).skip(skip).limit(limit);
+            totalJobs = await Job.countDocuments({ userId });
+        } else {
+            jobs  = await Job.find().skip(skip).limit(limit);
+            totalJobs = await Job.countDocuments();
+        }
+        
+        const totalPages = Math.ceil(totalJobs / limit);
+
+        return { jobs , totalJobs, totalPages };
+    } catch (error) {
+        throw error;
+    }
+}
+
+// POST methods
 const sendNewJob = async (data) => {
     try {
         const { userId, title, body } = data; // imageURLs
@@ -53,25 +80,6 @@ const dropJob = async (data) => {
     }
 }
 
-const getUserRelatedJobs = async (data, limit = 8) => {
-    try {
-        const { userId } = data;
-        const userJobs = await Job.find({ userId });
-        return userJobs;
-    } catch (error) {
-        throw error;
-    }
-}
-
-const getAllJobs = async (limit = 8) => {
-    try {
-        const allJobs = await Job.find();
-        return allJobs;
-    } catch (error) {
-        throw error;
-    }
-}
-
 const updateFinalApplicant = async (jobId, userId) => {
     try {
         if (!mongoose.Types.ObjectId.isValid(jobId) || !mongoose.Types.ObjectId.isValid(userId)) {
@@ -95,4 +103,4 @@ const updateFinalApplicant = async (jobId, userId) => {
     }
 };
 
-module.exports = { sendNewJob, getUserRelatedJobs, getAllJobs, updateFinalApplicant, dropJob };
+module.exports = { sendNewJob, getJobs, updateFinalApplicant, dropJob };
