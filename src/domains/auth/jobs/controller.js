@@ -1,10 +1,14 @@
 const mongoose = require('mongoose');
 const Job = require('./model');
 const User = require('./../user/model');
+const { ObjectId } = require('mongodb');
 
 // GET methods para FRONT
 
 // traer trabajos de todos o según usuario
+// WIP - Se va a utilizar una lista asociativa para asociar índices a los ID de trabajos.
+// Esta lógica se debe tercerizar de este dominio, porque se va a aplicar en diversas
+// partes del código. (para eliminar usuarios siendo admin)
 const getJobs = async (data) => {
     try {
         const { page = 1, limit = 10, userId } = data;
@@ -64,6 +68,7 @@ const sendNewJob = async (data) => {
     }
 }
 
+// Hay que mejorar la lógica de edición y eliminación
 const dropJob = async (data) => {
     try {
         const { userId, jobId } = data;
@@ -79,14 +84,55 @@ const dropJob = async (data) => {
             throw Error("Job or user not found");
         }
 
-        if (fetchedJob._id !== fetchedUser._id) {
+        if (fetchedUser.userType !== "client") {
+            throw Error(`Only "client" type user can drop job requests, not ${userType}`);
+        }
+
+        if (!new ObjectId(fetchedJob.userId).equals(fetchedUser._id)) {
             throw Error("Unautorized access");
         }
         
-        const dropResult = Job.dropOne({ _id: jobId });
-        return dropResult;
+        const dropedResult = await Job.deleteOne({ _id: jobId });
+        return dropedResult;
     } catch (error) {
         throw error;
+    }
+}
+
+const editJob = async (data) => {
+    try {
+        const { userId, jobId, title, body } = data; 
+
+        if (!(userId && jobId)) {
+            throw Error("userId and jobId required");
+        }
+
+        const fetchedJob = await Job.findOne({ _id: jobId });
+        const fetchedUser = await User.findOne({ _id: userId });
+
+        if (fetchedUser.userType !== "client") {
+            throw Error(`Only "client" type user can drop job requests, not ${userType}`);
+        }
+
+        if (!new ObjectId(fetchedJob.userId).equals(fetchedUser._id)) {
+            throw Error("Unautorized access");
+        }
+
+        if (!title) {
+            title = fetchedJob.title;
+        }
+
+        if (!body) {
+            body = fetchedJob.body;
+        }
+
+        const filter = { _id: jobId };
+        const updatePost = { $set: { title: title, body: body } };
+
+        const editedJob = await Job.updateOne(filter, updatePost);
+        return editedJob;
+    } catch (error) {
+        throw Error("Unautorized access");
     }
 }
 
@@ -113,4 +159,4 @@ const updateFinalApplicant = async (jobId, userId) => {
     }
 };
 
-module.exports = { sendNewJob, getJobs, updateFinalApplicant, dropJob };
+module.exports = { sendNewJob, getJobs, updateFinalApplicant, dropJob, editJob };

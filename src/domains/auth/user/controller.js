@@ -29,7 +29,8 @@ const authenticateUser = async (data) => {
             throw new Error("Incorrect password");
         }
 
-        const tokenData = { userId: fetchedUser._id, username: fetchedUser.username, email: fetchedUser.email };
+        // en vez de poner el usertype en el token, debo hacer un User.findOne({ _id: userId }); y obtengo todos los datos del usuario
+        const tokenData = { userId: fetchedUser._id, username: fetchedUser.username, userType: fetchedUser.userType };
         const token = await createToken(tokenData);
 
         fetchedUser.token = token;
