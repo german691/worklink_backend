@@ -4,42 +4,30 @@ const User = require('./../user/model');
 const { ObjectId } = require('mongodb');
 
 // GET methods para FRONT
-
-// traer trabajos de todos o según usuario
-// WIP - Se va a utilizar una lista asociativa para asociar índices a los ID de trabajos.
-// Esta lógica se debe tercerizar de este dominio, porque se va a aplicar en diversas
-// partes del código. (para eliminar usuarios siendo admin)
 const getJobs = async (data) => {
     try {
-        const { page = 1, limit = 10, userId } = data;
+        const { page = 1, limit = 10, username } = data;
         const skip = (page - 1) * limit;
 
-        let jobs, totalJobs;
-
-        if (userId) {
-            if (!mongoose.Types.ObjectId.isValid(userId)) {
-              return res.status(400).send("Invalid userId format");
+        let user;
+        if (username) {
+            user = await User.findOne({ username });
+            if (!user) {
+                return { status: 404, message: "Username not found" };
             }
-            
-            const userExists = await User.find({ _id: userId });
-            if (!userExists) {
-              return res.status(404).send("User not found");
-            }
-
-            jobs  = await Job.find({ userId: userId }).skip(skip).limit(limit);
-            totalJobs = await Job.countDocuments({ userId: userId });
-        } else {
-            jobs  = await Job.find().skip(skip).limit(limit);
-            totalJobs = await Job.countDocuments();
         }
-        
-        const totalPages = Math.ceil(totalJobs / limit);
 
-        return { jobs , totalJobs, totalPages };
+        const query = user ? { userId: user._id } : {};
+        const totalJobs = await Job.countDocuments(query);
+        const jobs = await Job.find(query).skip(skip).limit(limit);
+
+        const totalPages = limit > 0 ? Math.ceil(totalJobs / limit) : 0;
+
+        return { jobs, totalJobs, totalPages };
     } catch (error) {
         throw error;
     }
-}
+};
 
 // POST methods
 const sendNewJob = async (data) => {

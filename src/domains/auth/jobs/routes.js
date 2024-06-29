@@ -5,9 +5,8 @@ const auth = require("./../../../middleware/auth");
 
 router.get("/", auth, async (req, res) => {
     try {
-        const { page = 1, limit = 10, userId } = req.query;
-        const jobs  = await getJobs({ page, limit, userId });
-        
+        const { page = 1, limit = 10, username } = req.query;
+        const jobs = await getJobs({ page, limit, username });
         res.status(200).json(jobs);
     } catch (error) {
         res.status(400).send(error.message);

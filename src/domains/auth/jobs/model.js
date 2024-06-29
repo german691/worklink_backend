@@ -28,4 +28,4 @@ const jobIndexSchema = new mongoose.Schema({
 
 const JobIndex = mongoose.model('JobIndex', jobIndexSchema);
 
-module.exports = JOb, JobIndex;
+module.exports = Job, JobIndex;
