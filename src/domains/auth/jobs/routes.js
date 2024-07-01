@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { sendNewJob, getJobs, dropJob, editJob, createNewCategory, getCategories } = require("./controller");
+const { sendNewJob, getJobs, dropJob, editJob, getCategories, createNewCategory, applyToJob, leaveJob, setFinalWorker, markJobAsCompleted } = require("./controller");
 const auth = require("./../../../middleware/auth");
 
 // routes for clients
@@ -55,7 +55,6 @@ router.delete("/", auth(["client", "admin"]), async (req, res) => {
 router.put("/", auth(["client", "admin"]), async (req, res) => {
     try {
         const { jobId, title, description, } = req.body;
-
         const userId = req.currentUser.userId;
         
         if (!jobId) {
@@ -67,13 +66,72 @@ router.put("/", auth(["client", "admin"]), async (req, res) => {
         }
 
         const editedJob = await editJob({
-            userId, 
-            jobId,
-            title, 
-            description
+            userId, jobId, title, description
         });
 
         res.status(200).json(editedJob);
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+});
+
+router.post("/start", auth(["client", "admin"]), async (req, res) => {
+    try {
+        const { userId, jobId } = req.body;
+
+        if (!(userId && jobId)) throw Error("userId or jobId not found");
+
+        const finalWorker = await setFinalWorker({ userId, jobId });
+        
+        res.status(200).json(finalWorker);
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+});
+
+router.post("/finish", auth(["client", "admin"]), async (req, res) => {
+    try {
+        const { jobId } = req.body;
+
+        if (!jobId) throw Error("A jobId is required");
+
+        const completedJob = await markJobAsCompleted(jobId);
+        res.status(200).json(completedJob);
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+});
+
+// worker
+router.post("/apply", auth(["worker", "admin"]), async (req, res) => {
+    try {
+        const { jobId } = req.body;
+        const userId = req.currentUser.userId;
+        
+        if (!jobId) {
+            throw Error("jobId must be provided in order to edit a job");
+        }
+
+        const appliedJob = await applyToJob({ userId, jobId });
+
+        res.status(200).json(appliedJob);
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+});
+
+router.post("/leave", auth(["worker", "admin"]), async (req, res) => {
+    try {
+        const { jobId } = req.body;
+        const userId = req.currentUser.userId;
+        
+        if (!jobId) {
+            throw Error("jobId must be provided in order to leave a job");
+        }
+
+        const leftJob = await leaveJob({ userId, jobId });
+
+        res.status(200).json(leftJob);
     } catch (error) {
         res.status(400).send(error.message);
     }

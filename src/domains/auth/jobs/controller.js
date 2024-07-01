@@ -4,7 +4,7 @@ const { User } = require('./../user/model');
 const { ObjectId } = require('mongodb');
 const { _encrypt, _decrypt } = require("./../../../util/cryptData");
 
-// POST methods
+// client --------------------------------------------------------------
 const sendNewJob = async (data) => {
     try {
         const { publisher, userId, title, description, category } = data; // imageURLs
@@ -29,7 +29,6 @@ const sendNewJob = async (data) => {
     }
 }
 
-// GET methods para FRONT
 const getJobs = async (data) => {
     try {
         const { page = 1, limit = 10, username } = data;
@@ -64,7 +63,6 @@ const getJobs = async (data) => {
     }
 };
 
-// DELETE methods
 const dropJob = async (data) => {
     try {
         const { userId, jobId } = data;
@@ -90,7 +88,6 @@ const dropJob = async (data) => {
     }
 }
 
-// PUT methods
 const editJob = async (data) => {
     try {
         const { userId, jobId, title, description } = data; 
@@ -99,9 +96,10 @@ const editJob = async (data) => {
             throw Error("userId and jobId required");
         }
 
-        const id = _decrypt(jobId)
+        const id = _decrypt(jobId);
 
         const fetchedJob = await Job.findOne({ _id: id });
+        if (!fetchedJob) throw Error("Job not found");
 
         if (!new ObjectId(fetchedJob.userId).equals(userId)) {
             throw Error("Unautorized access");
@@ -109,7 +107,8 @@ const editJob = async (data) => {
 
         const editedJob = await Job.updateOne(
             { _id: id }, // filter
-            { $set: { title, description } }); // set
+            { $set: { title, description } // set
+        }); 
 
         return editedJob;
 
@@ -118,24 +117,130 @@ const editJob = async (data) => {
     }
 }
 
-// worker
-const updateFinalApplicant = async (jobId, userId) => {
+const setFinalWorker = async (data) => {
     try {
+        const { userId, jobId } = data; 
+
+        const fetchedUser = await Job.findOne({ _id: userId });
+        if (!fetchedUser) throw Error("User not found");
+        if (fetchedUser.userType !== "worker") throw Error("User must be a worker");
+
+        const id = _decrypt(jobId);
+
+        const fetchedJob = await Job.findOne({ _id: id });
+        if (!fetchedJob) throw Error("Job not found");
+
+        const applicants = fetchedJob.applicantsId;
+        if (!applicants.includes(userId)) throw Error("The worker is not listed as an applicant");
+
+        let updatedApplicants = null;
+
+        const finalWorker = await Job.updateOne(
+            { _id: id }, // filter
+            { $set: { 
+                applicantsId: updatedApplicants,
+                finalApplicant: userId
+             } } // set
+        );
+
+        return finalWorker;
 
     } catch (error) {
         throw error;
     }
 };
 
-// admin 
+const markJobAsCompleted = async (data) => {
+    try {
+        const { jobId } = data; 
+        
+        if (!jobId) throw Error("jobId required");
+
+        const id = _decrypt(jobId);
+
+        const fetchedJob = await Job.findOne({ _id: id });
+        if (!fetchedJob) throw Error("Job not found");
+
+        const completedJob = await Job.updateOne(
+            { _id: id }, // filter
+            { $set: { finished: true } } // set
+        );
+
+        return completedJob;
+    } catch (error) {
+        throw error;
+    }
+};
+
+// worker --------------------------------------------------------------
+const applyToJob = async (data) => {
+    try {
+        const { userId, jobId } = data; 
+
+        if (!(userId && jobId)) {
+            throw Error("userId and jobId required");
+        }
+
+        const id = _decrypt(jobId)
+
+        const fetchedJob = await Job.findOne({ _id: id });
+        const applicants = fetchedJob.applicantsId;
+
+        if (applicants.includes(userId)) {
+            throw Error("Already in applicants list");
+        }
+
+        applicants.push(userId);
+
+        const editedJob = await Job.updateOne(
+            { _id: id }, // filter
+            { $set: { applicantsId: applicants } } // set
+        );
+
+        return editedJob;
+
+    } catch (error) {
+        throw error;
+    }
+};
+
+const leaveJob = async (data) => {
+    try {
+        const { userId, jobId } = data; 
+
+        if (!(userId && jobId)) {
+            throw Error("userId and jobId required");
+        }
+
+        const id = _decrypt(jobId)
+
+        const fetchedJob = await Job.findOne({ _id: id });
+        const applicants = fetchedJob.applicantsId;
+
+        if (!applicants.includes(userId)) throw Error("User is not listed as an applicant");
+
+        let updatedApplicants = applicants.filter(_userId => _userId.toString() !== userId.toString());
+
+        const leftJob = await Job.updateOne(
+            { _id: id }, // filter
+            { $set: { applicantsId: updatedApplicants } } // set
+        );
+
+        return leftJob;
+
+    } catch (error) {
+        throw error;
+    }
+};
+
+// admin --------------------------------------------------------------
 const createNewCategory = async (data) => {
     try {
         const { category } = data;
     
         const newCategory = new JobCategory({ category });
-    
         const createdCategory = await newCategory.save();
-    
+        
         return createdCategory;
         
     } catch (error) {
@@ -153,4 +258,6 @@ const getCategories = async () => {
 }
 
 
-module.exports = { sendNewJob, getJobs, updateFinalApplicant, dropJob, editJob, getCategories, createNewCategory };
+module.exports = { sendNewJob, getJobs, dropJob, editJob, getCategories, 
+                   createNewCategory, applyToJob, leaveJob, setFinalWorker,
+                   markJobAsCompleted };
