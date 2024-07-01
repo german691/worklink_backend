@@ -4,7 +4,7 @@ require('dotenv').config();
 const algorithm = 'aes-256-cbc';
 const secretKey = Buffer.from(process.env.CRYPT_KEY, 'base64');
 
-const encrypt = (text) => {
+const _encrypt = (text) => {
     const iv = crypto.randomBytes(16); // Generar un IV aleatorio
     const cipher = crypto.createCipheriv(algorithm, secretKey, iv);
     let encrypted = cipher.update(text, 'utf8', 'hex');
@@ -12,7 +12,7 @@ const encrypt = (text) => {
     return `${iv.toString('hex')}:${encrypted}`;
 };
 
-const decrypt = (hash) => {
+const _decrypt = (hash) => {
     const parts = hash.split(':');
     const iv = Buffer.from(parts.shift(), 'hex');
     const encryptedText = parts.join(':');
@@ -21,3 +21,5 @@ const decrypt = (hash) => {
     decrypted += decipher.final('utf8');
     return decrypted;
 };
+
+module.exports = { _encrypt, _decrypt };

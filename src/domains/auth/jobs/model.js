@@ -6,8 +6,10 @@ const Schema = mongoose.Schema;
 
 const jobSchema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'User' } , // Qué usuario hizo la publicación
+    publisher: { type: String, required: true },
     title: { type: String, required: true},
-    body: { type: String, required: true},
+    description: { type: String, required: true},
+    category: { type: String, required: true },
     //imageURLs: [String], // Probablemente usemos URLs de imágenes, posiblemente hosteadas en local
     createdAt: { type: Date, default: Date.now },
     expiresAt: { type: Date, default: 2592000000 }, 
@@ -18,14 +20,11 @@ const jobSchema = new Schema({
 
 const Job = mongoose.model("job", jobSchema);
 
-// --------- Generador de índices por solicitud
-
-const jobIndexSchema = new mongoose.Schema({
-    jobId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Job' },
-    index: { type: Number, required: true },
-    createdAt: { type: Date, default: Date.now, expires: 3600 } // Opcional: establece un tiempo de vida para el índice temporal
+// modelo de categorías *para simplificar todo al máximo
+const jobCategorySchema = new Schema({
+    category: { type: String, required: true }
 });
 
-const JobIndex = mongoose.model('JobIndex', jobIndexSchema);
+const JobCategory = mongoose.model("job_category", jobCategorySchema);
 
-module.exports = Job, JobIndex;
+module.exports = { Job, JobCategory };

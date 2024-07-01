@@ -1,21 +1,15 @@
-const User = require("./model");
+const { User } = require("./model");
 const { hashData, verifyHashedData } = require("./../../../util/hashData");
 const createToken = require("./../../../util/createToken");
 
 const authenticateUser = async (data) => {
-    const { username, email, password } = data
+    const { user, password } = data
 
     try {
-        let fetchedUser;
-
-        if (username) {
-            fetchedUser = await User.findOne({ username });
-        } else if (email) {
-            fetchedUser = await User.findOne({ email });
-        }
+        const fetchedUser = await User.findOne({ $or: [{ username: user }, { email: user }] });
 
         if (!fetchedUser) {
-            throw new Error(`Invalid credentials (no user found with ${username ? 'username ' + username : 'email ' + email})`);
+            throw new Error(`${user} not found`);
         }
 
         if (!fetchedUser.verified) {
@@ -29,13 +23,12 @@ const authenticateUser = async (data) => {
             throw new Error("Incorrect password");
         }
 
-        // en vez de poner el usertype en el token, debo hacer un User.findOne({ _id: userId }); y obtengo todos los datos del usuario
         const tokenData = { userId: fetchedUser._id, username: fetchedUser.username, userType: fetchedUser.userType };
         const token = await createToken(tokenData);
 
         fetchedUser.token = token;
-
         return fetchedUser;
+
     } catch (error) {
         throw error;
     }
@@ -50,7 +43,6 @@ const createNewUser = async (data) => {
             userType,
             name,
             surname, 
-            dni,
             birthdate,
         } = data;
 
@@ -64,17 +56,15 @@ const createNewUser = async (data) => {
 
         const hashedPassword = await hashData(password);
 
-        capitalizeName = name.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
-        capitalizeSurname = surname.replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
+        const [capitalizedName, capitalizedSurname] = capitalize({ data: [name, surname] });
 
         const newUser = new User({
             username, 
             email, 
             password: hashedPassword, 
             userType,
-            name: capitalizeName,
-            surname: capitalizeSurname, 
-            dni,
+            name: capitalizedName,
+            surname: capitalizedSurname, 
             birthdate: newDate,
         });
 
@@ -86,6 +76,7 @@ const createNewUser = async (data) => {
     }
 };
 
+// user utils
 const checkIfUnderage = async (birthdate) => {
     try {
         const birthdateObject = new Date(birthdate);
@@ -112,6 +103,11 @@ const checkIfUnderage = async (birthdate) => {
     } catch (error) {
         throw error;
     }
+}
+
+const capitalize = ({ data }) => {
+    return data.map(value => value.replace(/(^\w{1})|(\s+\w{1})/g, 
+        letter => letter.toUpperCase()));
 }
 
 module.exports = { createNewUser, authenticateUser, checkIfUnderage };
