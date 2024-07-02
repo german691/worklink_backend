@@ -1,5 +1,5 @@
-const User = require("./../user/model");
-const { hashData } = require("./../../util/hashData");
+const { User } = require("./../../auth/user/model");
+const { hashData } = require("./../../../util/hashData");
 const { sendOTP, deleteOTP, verifyOTP } = require("./../otp/controller");
 
 const sendPasswordResetOTPEmail = async (email) => {
@@ -19,6 +19,7 @@ const sendPasswordResetOTPEmail = async (email) => {
             message: "Enter the code below to reset your password",
             duration: 1,
         };
+        
         const createdOTP = await sendOTP(otpDetails);
         return createdOTP;
     } catch (error) {

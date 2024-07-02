@@ -1,7 +1,7 @@
 const OTP = require("./model");
-const generateOtp = require("./../../util/generateOtp");
-const sendEmail = require("./../../util/sendEmail");
-const { hashData, verifyHashedData } = require("./../../util/hashData");
+const generateOtp = require("./../../../util/generateOtp");
+const sendEmail = require("./../../../util/sendEmail");
+const { hashData, verifyHashedData } = require("./../../../util/hashData");
 const { AUTH_EMAIL } = process.env;
 
 const verifyOTP = async ({ email, otp }) => {
@@ -26,7 +26,6 @@ const verifyOTP = async ({ email, otp }) => {
             throw Error("Code has expired. Please, request for a new one.")
         }
 
-        // Si no expiró todavía, entonces es válido
         const hashedOTP = await matchedOTPRecord.otp;
         const validOTP = await verifyHashedData(otp, hashedOTP); 
 
