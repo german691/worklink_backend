@@ -1,14 +1,14 @@
 const express = require("express");
 const router = express.Router();
-const { authenticateAdmin, createNewAdmin, } = require("./controller");
+const { authenticateAdmin, createNewAdmin, getUsersInfo} = require("./controller");
 const auth = require("./../../../middleware/auth");
 
 router.post("/auth", async (req, res) => {
     try {
         let { username, password } = req.body;
 
-        if (!username) throw new Error('Invalid username');
-        if (!password) throw new Error('Invalid password');
+        if (!username) throw new Error('Empty username');
+        if (!password) throw new Error('Empty password');
 
         const authenticatedUser = await authenticateAdmin({ username, password });
 
@@ -41,5 +41,16 @@ router.post("/register", async (req, res) => {
         res.status(400).send(error.message);
     }
 })
+
+//rutas para testing
+//ver info de usuario pero con id encriptada
+router.get("/user_info", auth(["admin"]), async (req, res) => {
+    try {
+        const userInfo = await getUsersInfo();
+        res.status(200).json(userInfo);
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+});
 
 module.exports = router;

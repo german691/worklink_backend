@@ -30,6 +30,7 @@ const authenticateUser = async (data) => {
         return fetchedUser;
 
     } catch (error) {
+        console.log(error);
         throw error;
     }
 };

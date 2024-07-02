@@ -74,6 +74,16 @@ const dropJob = async (data) => {
         const fetchedJob = await Job.findOne({ _id: _decrypt(jobId) });
         if (!fetchedJob) throw Error("Job not found");
 
+        if (fetchedJob.finished === true) {
+            throw Error("You cannot drop a job that has already been flagged as finished");
+        }
+
+        // Necesito un nuevo controlador y un endpoint para tirar los trabajos a pesar de si tienen o no un aplicante
+        // La razón es porque trabajador que aplicó debe enterarse de que la publicación fue dada de baja, y consentir.
+        if (fetchedJob.finalApplicant) {
+            throw Error("You cannot drop a job that has a deffinitive applicant");
+        } 
+
         const fetchedUser = await User.findOne({ _id: userId });
         if (!fetchedUser) throw Error("Job or user not found");
 
@@ -105,6 +115,14 @@ const editJob = async (data) => {
             throw Error("Unautorized access");
         }
 
+        if (fetchedJob.finished === true) {
+            throw Error("You cannot edit a job that has already been flagged as finished");
+        }
+
+        if (fetchedJob.finalApplicant || fetchedJob.applicantsId.length > 0) {
+            throw Error("You cannot edit a job where workers applied");
+        }
+
         const editedJob = await Job.updateOne(
             { _id: id }, // filter
             { $set: { title, description } // set
@@ -119,28 +137,53 @@ const editJob = async (data) => {
 
 const setFinalWorker = async (data) => {
     try {
-        const { userId, jobId } = data; 
+        const { userId, jobId, currentUserId } = data; 
 
-        const fetchedUser = await Job.findOne({ _id: userId });
-        if (!fetchedUser) throw Error("User not found");
-        if (fetchedUser.userType !== "worker") throw Error("User must be a worker");
+        const fetchedWorker = await User.findOne({ _id: _decrypt(userId) });
+        if (!fetchedWorker) {
+            throw Error("User not found");
+        }
+    
+        // si se trata de aplicar al trabajo cualquier usuario que no sea un trabajador
+        if (fetchedWorker.userType !== "worker") {
+            throw Error(`userType must be worker, got ${fetchedWorker.userType}`);
+        }
 
-        const id = _decrypt(jobId);
+        const _jobId = _decrypt(jobId);
+        const fetchedJob = await Job.findOne({ _id: _jobId });
+        if (!fetchedJob) {
+            throw Error("Job not found");
+        }
 
-        const fetchedJob = await Job.findOne({ _id: id });
-        if (!fetchedJob) throw Error("Job not found");
+        if (fetchedJob.finished) {
+            throw Error("You cannot start a job that already finished");
+        }
 
-        const applicants = fetchedJob.applicantsId;
-        if (!applicants.includes(userId)) throw Error("The worker is not listed as an applicant");
+        if (!new ObjectId(fetchedJob.userId).equals(currentUserId)) {
+            throw Error("This job post does not belong to the given user");
+        }
+        
+        const im_frustrated = await Job.find();
 
-        let updatedApplicants = null;
+        const _userId = new ObjectId(_decrypt(userId));
+        console.log(_userId)
+        console.log(im_frustrated)
+
+        const userInApplicants = await Job.findOne({
+            _id: _jobId,
+            applicantsId: { $in: [ _userId ] }
+        });
+
+        if (!userInApplicants) {
+            throw Error("The worker needs to be in the applicants list in order to be selected");
+        }
 
         const finalWorker = await Job.updateOne(
-            { _id: id }, // filter
+            { _id: _jobId }, // filter
             { $set: { 
-                applicantsId: updatedApplicants,
-                finalApplicant: userId
-             } } // set
+                applicantsId: [null],
+                finalApplicant: _userId
+            } } // set
         );
 
         return finalWorker;
@@ -152,17 +195,29 @@ const setFinalWorker = async (data) => {
 
 const markJobAsCompleted = async (data) => {
     try {
-        const { jobId } = data; 
+        const { currentUserId, jobId } = data; 
         
-        if (!jobId) throw Error("jobId required");
+        if (!jobId) {
+            throw Error("jobId required");
+        }
 
-        const id = _decrypt(jobId);
+        const _jobId = _decrypt(jobId);
 
-        const fetchedJob = await Job.findOne({ _id: id });
-        if (!fetchedJob) throw Error("Job not found");
+        const fetchedJob = await Job.findOne({ _id: _jobId });
+        if (!fetchedJob) {
+            throw Error("Job not found");
+        }
+
+        if (!fetchedJob.finalApplicant) {
+            throw Error("Job does not contain a final applicant");
+        }
+
+        if (!new ObjectId(fetchedJob.userId).equals(currentUserId)) {
+            throw Error("This job post does not belong to the given user");
+        }
 
         const completedJob = await Job.updateOne(
-            { _id: id }, // filter
+            { _id: _jobId }, // filter
             { $set: { finished: true } } // set
         );
 
@@ -184,6 +239,10 @@ const applyToJob = async (data) => {
         const id = _decrypt(jobId)
 
         const fetchedJob = await Job.findOne({ _id: id });
+        if (fetchedJob.finalApplicant) {
+            throw Error("You cannot apply to a job that has already started");
+        }
+
         const applicants = fetchedJob.applicantsId;
 
         if (applicants.includes(userId)) {
@@ -215,9 +274,20 @@ const leaveJob = async (data) => {
         const id = _decrypt(jobId)
 
         const fetchedJob = await Job.findOne({ _id: id });
+        const finalApplicant = fetchedJob.finalApplicant ? fetchedJob.finalApplicant.toString() : null;
+        
+        // si hay un aplicante final y ese aplicante final es a su vez el usuario actual
+        // la lógica actual es de negación, pero a futuro si se va a poder dejar el trabajo
+        // no está definido qué acción se va a tomar todavía, por lo que así se queda.
+        if (finalApplicant && finalApplicant === userId.toString()) {
+            throw Error("You cannot leave a job you already been accepted");
+        }
+
         const applicants = fetchedJob.applicantsId;
 
-        if (!applicants.includes(userId)) throw Error("User is not listed as an applicant");
+        if (!applicants.includes(userId.toString())) {
+            throw Error("User is not listed as an applicant");
+        }
 
         let updatedApplicants = applicants.filter(_userId => _userId.toString() !== userId.toString());
 

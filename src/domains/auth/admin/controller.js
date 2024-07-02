@@ -1,6 +1,8 @@
 const { Admin } = require("./model");
+const { User } = require("./../user/model");
 const { hashData, verifyHashedData } = require("./../../../util/hashData");
 const createToken = require("./../../../util/createToken");
+const { _encrypt } = require("../../../util/cryptData");
 
 const authenticateAdmin = async (data) => {
     const { username, password } = data
@@ -53,4 +55,22 @@ const createNewAdmin = async (data) => {
     }
 }
 
-module.exports = { authenticateAdmin, createNewAdmin };
+// controles para testing
+const getUsersInfo = async () => {
+    try {
+        const users = await User.find();
+        const userInfo = users.map(user => {
+            const { _id, ...rest } = user._doc;
+            return {
+                userId: _encrypt(user._id.toString()),
+                ...rest
+            };
+        });
+
+        return userInfo;
+    } catch (error) {
+        throw error;
+    }
+};
+
+module.exports = { authenticateAdmin, createNewAdmin, getUsersInfo };

@@ -77,11 +77,14 @@ router.put("/", auth(["client", "admin"]), async (req, res) => {
 
 router.post("/start", auth(["client", "admin"]), async (req, res) => {
     try {
-        const { userId, jobId } = req.body;
+        const { userId, jobId } = req.body; // both encrypted
+        const currentUserId = req.currentUser.userId;
 
-        if (!(userId && jobId)) throw Error("userId or jobId not found");
-
-        const finalWorker = await setFinalWorker({ userId, jobId });
+        if (!(userId && jobId)) {
+            throw Error("userId or jobId not found");
+        }
+        
+        const finalWorker = await setFinalWorker({ userId, jobId, currentUserId });
         
         res.status(200).json(finalWorker);
     } catch (error) {
@@ -92,10 +95,11 @@ router.post("/start", auth(["client", "admin"]), async (req, res) => {
 router.post("/finish", auth(["client", "admin"]), async (req, res) => {
     try {
         const { jobId } = req.body;
+        const currentUserId = req.currentUser.userId;
 
         if (!jobId) throw Error("A jobId is required");
 
-        const completedJob = await markJobAsCompleted(jobId);
+        const completedJob = await markJobAsCompleted({ currentUserId, jobId });
         res.status(200).json(completedJob);
     } catch (error) {
         res.status(400).send(error.message);

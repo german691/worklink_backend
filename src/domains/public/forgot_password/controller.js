@@ -1,4 +1,4 @@
-const User = require("./../../auth/user/model");
+const { User } = require("./../../auth/user/model");
 const { hashData } = require("./../../../util/hashData");
 const { sendOTP, deleteOTP, verifyOTP } = require("./../otp/controller");
 
