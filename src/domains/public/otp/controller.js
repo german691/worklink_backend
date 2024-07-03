@@ -10,7 +10,6 @@ const verifyOTP = async ({ email, otp }) => {
             throw Error("Values for email and otp must be provided");
         }
 
-        // nos aseguramos que el OTP exista
         const matchedOTPRecord = await OTP.findOne({
             email,
         });
@@ -42,13 +41,10 @@ const sendOTP = async ({ email, subject, message, duration }) => {
             throw Error("Missing values for email, subject or message");
         }
 
-        // Limpiar otp records anteriores
         await OTP.deleteOne({ email });
 
-        // Generar pin
         const generatedOtp = await generateOtp();
 
-        // Enviar mail
         const emailOptions = {
             from: AUTH_EMAIL,
             to: email,
@@ -57,7 +53,6 @@ const sendOTP = async ({ email, subject, message, duration }) => {
         };
         await sendEmail(emailOptions);
 
-        // guardamos el OTP en nuestra DB
         const hashedOTP = await hashData(generatedOtp);
         const newOTP = await new OTP({
             email,

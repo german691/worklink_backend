@@ -2,40 +2,7 @@ const { User } = require("./model");
 const { hashData, verifyHashedData } = require("./../../../util/hashData");
 const createToken = require("./../../../util/createToken");
 
-const authenticateUser = async (data) => {
-    const { user, password } = data
-
-    try {
-        const fetchedUser = await User.findOne({ $or: [{ username: user }, { email: user }] });
-
-        if (!fetchedUser) {
-            throw new Error(`${user} not found`);
-        }
-
-        if (!fetchedUser.verified) {
-            throw new Error("Email hasn't been verified yet. Check your inbox.");
-        }
-
-        const hashedPassword = fetchedUser.password;
-        const passwordMatch = await verifyHashedData(password, hashedPassword);
-
-        if (!passwordMatch) {
-            throw new Error("Incorrect password");
-        }
-
-        const tokenData = { userId: fetchedUser._id, username: fetchedUser.username, userType: fetchedUser.userType };
-        const token = await createToken(tokenData);
-
-        fetchedUser.token = token;
-        return fetchedUser;
-
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
-};
-
-const createNewUser = async (data) => {
+const createNewUser = async (value) => {
     try {
         const { 
             username, 
@@ -45,7 +12,7 @@ const createNewUser = async (data) => {
             name,
             surname, 
             birthdate,
-        } = data;
+        } = value;
 
         const existingEmail = await User.findOne({ email });
         const existingUsername = await User.findOne({ username });
@@ -73,6 +40,40 @@ const createNewUser = async (data) => {
 
         return createdUser;
     } catch (error) {
+        throw error;
+    }
+};
+
+const authenticateUser = async (value) => {
+    try {
+        const { username, email, password } = value
+        const user = username ? username : email;
+        
+        const fetchedUser = await User.findOne({ $or: [{ username: user }, { email: user }] });
+
+        if (!fetchedUser) {
+            throw new Error(`${user} not found`);
+        }
+
+        if (!fetchedUser.verified) {
+            throw new Error("Email hasn't been verified yet. Check your inbox.");
+        }
+
+        const hashedPassword = fetchedUser.password;
+        const passwordMatch = await verifyHashedData(password, hashedPassword);
+
+        if (!passwordMatch) {
+            throw new Error("Incorrect password");
+        }
+
+        const tokenData = { userId: fetchedUser._id, username: fetchedUser.username, userType: fetchedUser.userType };
+        const token = await createToken(tokenData);
+
+        fetchedUser.token = token;
+        return token;
+
+    } catch (error) {
+        console.log(error);
         throw error;
     }
 };

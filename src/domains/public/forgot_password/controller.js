@@ -34,10 +34,6 @@ const resetUserPassword = async ({ email, otp, newPassword }) => {
             throw Error("Invalid code passed. Check your inbox.")
         }
 
-        if (newPassword.length < 8) {
-            throw Error("Password is too short");
-        }
-
         const hashedNewPassword = await hashData(newPassword);
         await User.updateOne({ email }, { password: hashedNewPassword });
         
