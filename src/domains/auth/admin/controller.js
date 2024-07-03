@@ -4,10 +4,9 @@ const { hashData, verifyHashedData } = require("./../../../util/hashData");
 const createToken = require("./../../../util/createToken");
 const { _encrypt } = require("../../../util/cryptData");
 
-const authenticateAdmin = async (data) => {
-    const { username, password } = data
-
+const authenticateAdmin = async (value) => {
     try {
+        const { username, password } = value;
         const fetchedAdmin = await Admin.findOne({ username });
 
         if (!fetchedAdmin) {
@@ -25,16 +24,16 @@ const authenticateAdmin = async (data) => {
         const token = await createToken(tokenData);
 
         fetchedAdmin.token = token;
-        return fetchedAdmin;
+        return token;
 
     } catch (error) {
         throw error;
     }
 };
 
-const createNewAdmin = async (data) => {
+const createNewAdmin = async (value) => {
     try {
-        const { username, password } = data;
+        const { username, password } = value;
 
         const usernameExists = await Admin.findOne({ username });
         if (usernameExists) throw Error("Username is not available");

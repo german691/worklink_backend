@@ -104,7 +104,6 @@ const handleFinishJob = async (req, res) => {
 };
 
 //worker 
-
 const handleApplyToWork = async (req, res) => {
     try {
         const { jobId } = req.body;
@@ -139,4 +138,27 @@ const handleLeavingJob = async (req, res) => {
     }
 };
 
-module.exports = { handlePostJob, handleGetJob, handleEditJob, handleDropJob, handleStartJob, handleFinishJob, handleApplyToWork, handleLeavingJob };
+//admin
+const handleCategoryGetter = async (req, res) => {
+    try {
+        const categories = await getCategories();
+        res.status(200).json(categories);
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+};
+
+const handleCategorySetter = async(req, res) => {
+    try {
+        const { category } = req.body;
+
+        if (!category) throw Error("A value for category must be provided")
+        const createdNewCategory = await createNewCategory({ category });
+
+        res.status(200).json(createdNewCategory);
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+};
+
+module.exports = { handlePostJob, handleGetJob, handleEditJob, handleDropJob, handleStartJob, handleFinishJob, handleApplyToWork, handleLeavingJob, handleCategoryGetter, handleCategorySetter };
