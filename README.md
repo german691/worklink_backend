@@ -48,12 +48,12 @@ Los trabajadores pueden ver las solicitudes publicadas y postularse a ellas.
     ```env
     MONGODB_URI=(Tu conexión a MongoDB)
     PORT=3000
-    TOKEN_KEY=
+    TOKEN_KEY=SHA256 BASE64
     TOKEN_EXPIRY=24h
-    CRYPT_KEY=
-    ADMIN_KEY=
+    CRYPT_KEY=SHA256 BASE64
+    ADMIN_KEY=SHA256 BASE64
     AUTH_EMAIL=(Tu email de contacto)
-    AUTH_PASSWORD=(La contraseña del email de contacto)
+    AUTH_PASSWORD=SHA256 HEX
     
 
 6.  Inicia el servidor:
@@ -66,10 +66,9 @@ Los trabajadores pueden ver las solicitudes publicadas y postularse a ellas.
 - **Endpoint:** `POST /api/v1/user/signup`
 - **Body:**
   ```json
-  { "username": "example", "email": "example@domain.abc", "password": "Example1$", "name": "example", "surname": "example", "birthdate": "1985-04-12T09:20:00Z" }
+  { "username": "example", "email": "example@domain.abc", "password": "Example1$", "userType": "worker or client", "name": "example", "surname": "example", "birthdate": "1985-04-12T09:20:00Z" }
 
 ### Autenticación de Usuario:
-
 
 - **Endpoint:** POST `/api/v1/user`
 - **Body:**
@@ -83,6 +82,25 @@ Los trabajadores pueden ver las solicitudes publicadas y postularse a ellas.
 ### Ver Status:
 **Endpoint:** `GET /api/v1/status`
 
+### Verificar Email:
+**Endpoint:** `POST /api/v1/email_verification/verify`
+- **Body:**
+  ```json
+  { "otp": "123456", "email": "example@domain.abc" }
+
+
+### Resetear contraseña:
+**Endpoint:** `POST /api/v1/forgot_password`
+- **Body:**
+  ```json
+  { "email": "example@domain.abc" }
+
+### Verificar cambio de contraseña:
+**Endpoint:** `POST /api/v1/forgot_password/verify`
+- **Body:**
+  ```json
+  { "otp": "123456", "email": "example@domain.abc" }
+  
 ## Cliente:
 
 ### Listar Solicitudes de Trabajo:
