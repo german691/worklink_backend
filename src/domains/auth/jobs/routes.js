@@ -3,9 +3,6 @@ const router = express.Router();
 const auth = require("./../../../middleware/auth");
 const { handlePostJob, handleGetJob, handleEditJob, handleDropJob, handleFinishJob, handleStartJob, handleApplyToWork, handleLeavingJob, handleCategorySetter, handleCategoryGetter } = require("./handler"); 
 
-// routes for clients
-// add, list, edit, delete jobs
-
 router.get("/", auth(), handleGetJob);
 
 router.post("/", auth(["client", "admin"]), handlePostJob);

@@ -3,12 +3,8 @@ const router = express.Router();
 const auth = require("./../../../middleware/auth");
 const { handleSignup, handleLogin } = require("./handler");
 
-router.post("/signup", async (req, res) => {
-    await handleSignup(req, res);
-})
+router.post("/signup", handleSignup);
 
-router.post("/", async (req, res) => {
-    await handleLogin(req, res);
-})
+router.post("/", handleLogin);
 
 module.exports = router;

@@ -1,12 +1,9 @@
 const express = require("express");
 const router = express.Router();
+const { checkStatus } = require("./handler")
 
 router.get("/", async (req, res) => {
-    try {
-        res.status(200).send("Worklink API is up and running");
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
+    checkStatus();
 });
 
 module.exports = router;
