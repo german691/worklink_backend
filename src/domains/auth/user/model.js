@@ -9,7 +9,7 @@ const UserSchema = new Schema({
     name: { type: String, required: true },
     surname: { type: String, required: true },
     birthdate: { type: Date, required: true }, 
-    verified: { type: Boolean, default: false },
+    verified: { type: Boolean, default: true },
     token: String,
     address: String,
     phone: String,

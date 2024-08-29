@@ -75,7 +75,7 @@ router.post("/signup", async (req, res) => {
                 birthdate,
             });
 
-            await sendVerificationOTPEmail(email);
+            // await sendVerificationOTPEmail(email);
 
             res.status(200).json(newUser);
         }
