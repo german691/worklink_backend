@@ -1,7 +1,7 @@
-const OTP = require("./model");
-const generateOtp = require("./../../../util/generateOtp");
-const sendEmail = require("./../../../util/sendEmail");
-const { hashData, verifyHashedData } = require("./../../../util/hashData");
+import OTP from "./model.js";
+import generateOtp from "./../../../util/generateOtp.js";
+import sendEmail from "./../../../util/sendEmail.js";
+import { hashData, verifyHashedData } from "./../../../util/hashData.js";
 const { AUTH_EMAIL } = process.env;
 
 const verifyOTP = async ({ email, otp }) => {
@@ -76,4 +76,4 @@ const deleteOTP = async (email) => {
     }
 };
 
-module.exports = { sendOTP, verifyOTP, deleteOTP };
+export { sendOTP, verifyOTP, deleteOTP };

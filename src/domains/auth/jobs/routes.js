@@ -1,7 +1,7 @@
-const express = require("express");
+import express from 'express';
 const router = express.Router();
-const auth = require("./../../../middleware/auth");
-const { handlePostJob, handleGetJob, handleEditJob, handleDropJob, handleFinishJob, handleStartJob, handleApplyToWork, handleLeavingJob, handleCategorySetter, handleCategoryGetter } = require("./handler"); 
+import  auth from "./../../../middleware/auth.js";
+import { handlePostJob, handleGetJob, handleEditJob, handleDropJob, handleFinishJob, handleStartJob, handleApplyToWork, handleLeavingJob, handleCategorySetter, handleCategoryGetter } from "./handler.js"; 
 
 router.get("/", auth(), handleGetJob);
 
@@ -25,4 +25,5 @@ router.get("/category", auth(["admin"]), handleCategoryGetter);
 
 router.post("/category", auth(["admin"]), handleCategorySetter);
 
-module.exports = router;
+export default router;
+

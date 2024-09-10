@@ -1,5 +1,5 @@
-const { sendPasswordResetOTPEmail, resetUserPassword } = require("./controller");
-const { resetPwdSchema } = require("./../../../validation/publicSchemes");
+import { sendPasswordResetOTPEmail, resetUserPassword } from "./controller.js";
+import resetPwdSchema from "./../../../validation/publicSchemes.js";
 
 const pwdOTPHandler = async (req, res) => {
     try {
@@ -32,4 +32,4 @@ const pwdResetHandler = async (req, res) => {
 };
 
 
-module.exports = { pwdOTPHandler, pwdResetHandler };
+export { pwdOTPHandler, pwdResetHandler };

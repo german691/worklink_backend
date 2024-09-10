@@ -1,4 +1,4 @@
-const { verifyUserEmail, sendVerificationOTPEmail } = require("./controller");
+import { verifyUserEmail, sendVerificationOTPEmail } from "./controller.js";
 
 const OTPMailHandler = async  (req, res) => {
     try {
@@ -25,4 +25,4 @@ const emailVerifyHandler = async (req, res) => {
     }
 }
 
-module.exports = { OTPMailHandler, emailVerifyHandler };
+export { OTPMailHandler, emailVerifyHandler };

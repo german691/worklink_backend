@@ -1,6 +1,6 @@
-const { loginSchema, signupSchema } = require("./../../../validation/userSchemes");
-const { createNewUser, authenticateUser } = require("./controller");
-const { sendVerificationOTPEmail } = require("./../../../domains/public/email_verification/controller");
+import { loginSchema, signupSchema } from "./../../../validation/userSchemes.js";
+import { createNewUser, authenticateUser } from "./controller.js";
+import { sendVerificationOTPEmail } from "./../../../domains/public/email_verification/controller.js";
 
 const handleSignup = async (req, res) => {
     try {
@@ -36,4 +36,4 @@ const handleLogin = async (req, res) => {
     }
 };
 
-module.exports = { handleSignup, handleLogin };
+export { handleSignup, handleLogin };

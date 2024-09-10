@@ -1,4 +1,4 @@
-const { sendOTP, verifyOTP } = require("./controller");
+import { sendOTP, verifyOTP } from "./controller.js";
 
 const sendOTPHandler = async (req, res) => {
     try {
@@ -26,4 +26,4 @@ const verifyOTPHandler = async (req, res) => {
     }
 };
 
-module.exports = { sendOTPHandler, verifyOTPHandler };
+export { sendOTPHandler, verifyOTPHandler };

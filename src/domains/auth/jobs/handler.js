@@ -1,4 +1,4 @@
-const { sendNewJob, getJobs, dropJob, editJob, getCategories, createNewCategory, applyToJob, leaveJob, setFinalWorker, markJobAsCompleted } = require("./controller");
+import { sendNewJob, getJobs, dropJob, editJob, getCategories, createNewCategory, applyToJob, leaveJob, setFinalWorker, markJobAsCompleted } from "./controller.js";
 
 // public
 const handleGetJob = async (req, res) => {
@@ -161,4 +161,4 @@ const handleCategorySetter = async(req, res) => {
     }
 };
 
-module.exports = { handlePostJob, handleGetJob, handleEditJob, handleDropJob, handleStartJob, handleFinishJob, handleApplyToWork, handleLeavingJob, handleCategoryGetter, handleCategorySetter };
+export { handlePostJob, handleGetJob, handleEditJob, handleDropJob, handleStartJob, handleFinishJob, handleApplyToWork, handleLeavingJob, handleCategoryGetter, handleCategorySetter };

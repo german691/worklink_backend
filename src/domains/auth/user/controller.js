@@ -1,6 +1,6 @@
-const { User } = require("./model");
-const { hashData, verifyHashedData } = require("./../../../util/hashData");
-const createToken = require("./../../../util/createToken");
+import User from "./model.js";
+import { hashData, verifyHashedData } from "./../../../util/hashData.js";
+import createToken from "./../../../util/createToken.js";
 
 const createNewUser = async (value) => {
     try {
@@ -112,4 +112,4 @@ const capitalize = ({ data }) => {
         letter => letter.toUpperCase()));
 }
 
-module.exports = { createNewUser, authenticateUser, checkIfUnderage };
+export { createNewUser, authenticateUser, checkIfUnderage };

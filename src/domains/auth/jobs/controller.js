@@ -1,8 +1,8 @@
-const mongoose = require('mongoose');
-const { Job, JobCategory } = require('./model');
-const { User } = require('./../user/model');
-const { ObjectId } = require('mongodb');
-const { _encrypt, _decrypt } = require("./../../../util/cryptData");
+import mongoose from 'mongoose';
+import { Job, JobCategory } from './model.js';
+import User from './../user/model.js';
+import ObjectId from 'mongodb';
+import { _encrypt, _decrypt } from "./../../../util/cryptData.js";
 
 // client --------------------------------------------------------------
 const sendNewJob = async (data) => {
@@ -328,6 +328,6 @@ const getCategories = async () => {
 }
 
 
-module.exports = { sendNewJob, getJobs, dropJob, editJob, getCategories, 
-                   createNewCategory, applyToJob, leaveJob, setFinalWorker,
-                   markJobAsCompleted };
+export { sendNewJob, getJobs, dropJob, editJob, getCategories, 
+                 createNewCategory, applyToJob, leaveJob, setFinalWorker,
+                 markJobAsCompleted };

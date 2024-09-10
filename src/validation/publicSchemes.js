@@ -1,4 +1,4 @@
-const Joi = require('joi');
+import Joi from 'joi';
 
 const resetPwdSchema = Joi.object({
     otp: Joi.string().min(6).required(),
@@ -6,4 +6,4 @@ const resetPwdSchema = Joi.object({
     password: Joi.string().min(8).required(),
 });
 
-module.exports = { resetPwdSchema };
+export default resetPwdSchema;

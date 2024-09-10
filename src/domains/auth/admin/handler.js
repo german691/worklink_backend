@@ -1,5 +1,5 @@
-const { authenticateAdmin, createNewAdmin, getUsersInfo } = require("./controller");
-const { authSchema } = require("./../../../validation/adminSchemes");
+import { authenticateAdmin, createNewAdmin, getUsersInfo } from "./controller.js";
+import authSchema from "./../../../validation/adminSchemes.js";
 
 const handleAdminLogin = async (req, res) => {
     try {
@@ -8,7 +8,7 @@ const handleAdminLogin = async (req, res) => {
             throw Error(error.details[0].message);
         }
 
-        const authenticatedUser = await authenticateAdmin({ value });
+        const authenticatedUser = await authenticateAdmin(value);
 
         res.status(200).json(authenticatedUser);
     } catch (error) {
@@ -27,9 +27,8 @@ const handleAdminRegister = async (req, res) => {
         if (error) {
             throw Error(error.details[0].message);
         }
-
         //esto debe estar en un middleware
-        const newAdmin = await createNewAdmin({ value });
+        const newAdmin = await createNewAdmin(value);
 
         res.status(200).json(newAdmin);
     } catch (error) {
@@ -46,4 +45,4 @@ const handleUserInfoGetter = async (req, res) => {
     }
 };
 
-module.exports = { handleAdminRegister, handleAdminLogin, handleUserInfoGetter };
+export { handleAdminRegister, handleAdminLogin, handleUserInfoGetter };

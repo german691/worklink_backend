@@ -1,6 +1,6 @@
-const { User } = require("./../../auth/user/model");
-const { hashData } = require("./../../../util/hashData");
-const { sendOTP, deleteOTP, verifyOTP } = require("./../otp/controller");
+import User from "./../../auth/user/model.js";
+import { hashData } from "./../../../util/hashData.js";
+import { sendOTP, deleteOTP, verifyOTP } from "./../otp/controller.js";
 
 const sendPasswordResetOTPEmail = async (email) => {
     try {
@@ -44,4 +44,4 @@ const resetUserPassword = async ({ email, otp, newPassword }) => {
     }
 };
 
-module.exports = { sendPasswordResetOTPEmail, resetUserPassword };
+export { sendPasswordResetOTPEmail, resetUserPassword };

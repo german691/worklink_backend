@@ -7,4 +7,4 @@ const generateOtp = async () => {
     }
 };
 
-module.exports = generateOtp;
+export default { generateOtp };

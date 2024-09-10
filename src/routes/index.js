@@ -1,31 +1,28 @@
-const express = require("express");
+import express from 'express';
 const router = express.Router();
 
 // admin --------------------------------------------------------------------------
-
-const adminRoute = require("./../domains/auth/admin");
-router.use("/admin", adminRoute);
+import adminRoutes from "../domains/auth/admin/index.js";
+router.use("/admin", adminRoutes);
 
 // auth ---------------------------------------------------------------------------
+import jobsRoutes from "../domains/auth/jobs/index.js";
+router.use("/jobs", jobsRoutes);
 
-const jobsRoute = require("./../domains/auth/jobs");
-router.use("/jobs", jobsRoute);
-
-const userRoutes = require("./../domains/auth/user");
+import userRoutes from "../domains/auth/user/index.js";
 router.use("/user", userRoutes);
 
 // public --------------------------------------------------------------------------
+import statusRoutes from "../domains/public/status/index.js";
+router.use("/status", statusRoutes);
 
-const statusRoute = require("./../domains/public/status");
-router.use("/status", statusRoute);
+import otpRoutes from "../domains/public/otp/index.js";
+router.use("/otp", otpRoutes);
 
-const OTPRoutes = require("./../domains/public/otp");
-router.use("/otp", OTPRoutes);
+import emailVerificationRoutes from "../domains/public/email_verification/index.js";
+router.use("/email_verification", emailVerificationRoutes);
 
-const EmailVerificationRoutes = require("./../domains/public/email_verification");
-router.use("/email_verification", EmailVerificationRoutes);
+import forgotPasswordRoutes from "../domains/public/forgot_password/index.js";
+router.use("/forgot_password", forgotPasswordRoutes);
 
-const ForgotPasswordRoutes = require("./../domains/public/forgot_password");
-router.use("/forgot_password", ForgotPasswordRoutes);
-
-module.exports = router;
+export default router;

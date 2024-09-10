@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken");
+import jsonwebtoken from "jsonwebtoken";
 
 const { TOKEN_KEY, TOKEN_EXPIRY } = process.env;
 
@@ -8,7 +8,7 @@ const createToken = async (
     expiresIn = TOKEN_EXPIRY
 ) => {
     try {
-        const token = await jwt.sign(tokenData, tokenKey, {
+        const token = await jsonwebtoken.sign(tokenData, tokenKey, {
             expiresIn,
         });
         return token;
@@ -17,4 +17,4 @@ const createToken = async (
     }
 }
 
-module.exports = createToken;
+export default createToken;

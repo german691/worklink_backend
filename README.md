@@ -70,7 +70,6 @@ Los trabajadores pueden ver las solicitudes publicadas y postularse a ellas.
 
 ### Autenticación de Usuario:
 
-
 - **Endpoint:** POST `/api/v1/user`
 - **Body:**
   ```json

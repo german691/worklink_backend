@@ -1,8 +1,8 @@
-const { Admin } = require("./model");
-const { User } = require("./../user/model");
-const { hashData, verifyHashedData } = require("./../../../util/hashData");
-const createToken = require("./../../../util/createToken");
-const { _encrypt } = require("../../../util/cryptData");
+import Admin from "./model.js";
+import User from "./../user/model.js";
+import { hashData, verifyHashedData } from "./../../../util/hashData.js";
+import createToken from "./../../../util/createToken.js";
+import { _encrypt } from "../../../util/cryptData.js";
 
 const authenticateAdmin = async (value) => {
     try {
@@ -34,6 +34,10 @@ const authenticateAdmin = async (value) => {
 const createNewAdmin = async (value) => {
     try {
         const { username, password } = value;
+
+        if (!(username && password)) {
+            throw new Error('Username and Password needed')
+        }
 
         const usernameExists = await Admin.findOne({ username });
         if (usernameExists) throw Error("Username is not available");
@@ -72,4 +76,4 @@ const getUsersInfo = async () => {
     }
 };
 
-module.exports = { authenticateAdmin, createNewAdmin, getUsersInfo };
+export { authenticateAdmin, createNewAdmin, getUsersInfo };

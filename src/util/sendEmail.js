@@ -1,5 +1,4 @@
-const nodemailer = require("nodemailer");
-
+import nodemailer from 'nodemailer';
 const { AUTH_EMAIL, AUTH_PASSWORD } = process.env;
 
 let transporter = nodemailer.createTransport({
@@ -26,4 +25,4 @@ const sendEmail = async (mailOptions) => {
     }
 };
 
-module.exports = sendEmail;
+export default { sendEmail };

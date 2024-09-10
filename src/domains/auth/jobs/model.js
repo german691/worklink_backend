@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 // --------- Trabajo
@@ -26,4 +26,4 @@ const jobCategorySchema = new Schema({
 
 const JobCategory = mongoose.model("job_category", jobCategorySchema);
 
-module.exports = { Job, JobCategory };
+export { Job, JobCategory };

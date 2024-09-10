@@ -1,5 +1,5 @@
-const { User } = require("./../../auth/user/model");
-const { sendOTP, verifyOTP, deleteOTP } = require("./../otp/controller");
+import User from "./../../auth/user/model.js";
+import { sendOTP, verifyOTP, deleteOTP } from "./../otp/controller.js";
 
 const verifyUserEmail = async ({ email, otp }) => {
     try {
@@ -37,4 +37,4 @@ const sendVerificationOTPEmail = async (email) => {
     }
 };
 
-module.exports = { sendVerificationOTPEmail, verifyUserEmail };
+export { sendVerificationOTPEmail, verifyUserEmail };

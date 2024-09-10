@@ -1,6 +1,6 @@
-const express = require("express");
+import express from 'express';
 const router = express.Router();
-const { OTPMailHandler, emailVerifyHandler } = require("./handler");
+import { OTPMailHandler, emailVerifyHandler } from "./handler.js";
 
 router.post("/verify", async (req, res) => {
     await OTPMailHandler(req, res);
@@ -10,4 +10,4 @@ router.post("/", async (req, res) => {
     await emailVerifyHandler(req, res);
 })
 
-module.exports = router;
+export default router;

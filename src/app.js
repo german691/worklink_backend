@@ -1,15 +1,14 @@
 //mongodb connection
-require("dotenv").config();
+import connectToDB from "./config/db.js";
+connectToDB();
 
-require("./config/db");
-
-const express = require("express");
+import express from "express";
 
 const bodyParser = express.json;
 
-const cors = require("cors");
+import cors from 'cors';
 
-const routes = require("./routes");
+import routes from './routes/index.js'
 
 const app = express();
 
@@ -18,5 +17,5 @@ app.use(bodyParser());
 
 app.use("/api/v1", routes);
 
-module.exports = app;
+export default app;
 

@@ -1,10 +1,10 @@
-const express = require("express");
+import express from 'express';
 const router = express.Router();
-const auth = require("./../../../middleware/auth");
-const { handleSignup, handleLogin } = require("./handler");
+import auth from "./../../../middleware/auth.js"; // utilizado para futura autenticación
+import { handleSignup, handleLogin } from "./handler.js";
 
 router.post("/signup", handleSignup);
 
 router.post("/", handleLogin);
 
-module.exports = router;
+export default router;

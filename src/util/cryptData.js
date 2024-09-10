@@ -1,5 +1,6 @@
-const crypto = require('crypto');
-require('dotenv').config();
+import crypto from 'crypto';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const algorithm = 'aes-256-cbc';
 const secretKey = Buffer.from(process.env.CRYPT_KEY, 'base64');
@@ -22,4 +23,4 @@ const _decrypt = (hash) => {
     return decrypted;
 };
 
-module.exports = { _encrypt, _decrypt };
+export { _encrypt, _decrypt };
