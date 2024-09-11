@@ -78,11 +78,10 @@ const dropJob = async (data) => {
             throw Error("You cannot drop a job that has already been flagged as finished");
         }
 
-        // Necesito un nuevo controlador y un endpoint para tirar los trabajos a pesar de si tienen o no un aplicante
-        // La razón es porque trabajador que aplicó debe enterarse de que la publicación fue dada de baja, y consentir.
+        // debe avisar al trabajador aplicado al trabajo que su publicación fue marcada como sin listar
         if (fetchedJob.finalApplicant) {
             throw Error("You cannot drop a job that has a deffinitive applicant");
-        } 
+        }
 
         const fetchedUser = await User.findOne({ _id: userId });
         if (!fetchedUser) throw Error("Job or user not found");
@@ -91,8 +90,14 @@ const dropJob = async (data) => {
             throw Error("Unautorized access");
         }
         
-        const dropedResult = await Job.deleteOne({ _id: fetchedJob._id });
+        const dropedResult = await Job.findOneAndUpdate(
+            { _id: jobId }, 
+            { $set: { unlisted: true, unlistedAt: new Date() }}, 
+            { new: true }
+        );
+
         return dropedResult;
+        
     } catch (error) {
         throw error;
     }
@@ -183,7 +188,7 @@ const setFinalWorker = async (data) => {
             { $set: { 
                 applicantsId: [null],
                 finalApplicant: _userId
-            } } // set
+            } }
         );
 
         return finalWorker;
