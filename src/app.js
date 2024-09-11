@@ -17,5 +17,8 @@ app.use(bodyParser());
 
 app.use("/api/v1", routes);
 
+import { initAdmin } from "./util/initAdmin.js";
+initAdmin()
+
 export default app;
 
