@@ -1,7 +1,8 @@
 import express from 'express';
 const router = express.Router();
 import auth from "./../../../middleware/auth.js";
-import { handleAdminLogin, handleAdminRegister, handleUserInfoGetter } from "./handler.js";
+import { handleAdminLogin, handleAdminRegister } from './handlers/authHandler.js';
+import { handleUserInfoGetter } from './handlers/userHandler.js';
 
 router.post("/auth", handleAdminLogin);
 

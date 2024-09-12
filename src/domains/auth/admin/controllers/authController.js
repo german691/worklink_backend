@@ -1,10 +1,9 @@
-import Admin from "./model.js";
-import User from "./../user/model.js";
-import { hashData, verifyHashedData } from "./../../../util/hashData.js";
-import createToken from "./../../../util/createToken.js";
-import { _encrypt } from "../../../util/cryptData.js";
+import { hashData, verifyHashedData } from "./../../../../util/hashData.js";
+import createToken from "./../../../../util/createToken.js";
+import { _encrypt } from "../../../../util/cryptData.js";
+import Admin from "../model.js";
 
-const authenticateAdmin = async (value) => {
+export const authenticateAdmin = async (value) => {
     try {
         const { username, password } = value;
         const fetchedAdmin = await Admin.findOne({ username });
@@ -31,7 +30,7 @@ const authenticateAdmin = async (value) => {
     }
 };
 
-const createNewAdmin = async (value) => {
+export const createNewAdmin = async (value) => {
     try {
         const { username, password } = value;
 
@@ -57,23 +56,3 @@ const createNewAdmin = async (value) => {
         throw error;
     }
 }
-
-// controles para testing
-const getUsersInfo = async () => {
-    try {
-        const users = await User.find();
-        const userInfo = users.map(user => {
-            const { _id, ...rest } = user._doc;
-            return {
-                userId: _encrypt(user._id.toString()),
-                ...rest
-            };
-        });
-
-        return userInfo;
-    } catch (error) {
-        throw error;
-    }
-};
-
-export { authenticateAdmin, createNewAdmin, getUsersInfo };

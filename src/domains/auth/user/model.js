@@ -14,6 +14,7 @@ const UserSchema = new Schema({
     address: String,
     phone: String,
     info: String,
+    active: { type: Boolean, default: true },
     // Future fields:
     // profileImg: String // Reference to the image location
 });

@@ -1,7 +1,8 @@
-import { authenticateAdmin, createNewAdmin, getUsersInfo } from "./controller.js";
-import authSchema from "./../../../validation/adminSchemes.js";
+import { authenticateAdmin, createNewAdmin } from "../controllers/authController.js";
+import authSchema from "./../../../../validation/adminSchemes.js";
 
-const handleAdminLogin = async (req, res) => {
+// login
+export const handleAdminLogin = async (req, res) => {
     try {
         const { error, value } = authSchema.validate(req.body);
         if (error) {
@@ -16,7 +17,8 @@ const handleAdminLogin = async (req, res) => {
     }
 };
 
-const handleAdminRegister = async (req, res) => {
+// register
+export const handleAdminRegister = async (req, res) => {
     try {
         const key = req.headers["x-admin-key"];
         if (key !== process.env.ADMIN_KEY) {
@@ -35,14 +37,3 @@ const handleAdminRegister = async (req, res) => {
         res.status(400).send(error.message);
     }
 };
-
-const handleUserInfoGetter = async (req, res) => {
-    try {
-        const userInfo = await getUsersInfo();
-        res.status(200).json(userInfo);
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
-};
-
-export { handleAdminRegister, handleAdminLogin, handleUserInfoGetter };

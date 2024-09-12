@@ -25,4 +25,4 @@ const sendEmail = async (mailOptions) => {
     }
 };
 
-export default { sendEmail };
+export default sendEmail;

@@ -15,6 +15,10 @@ const app = express();
 app.use(cors());
 app.use(bodyParser());
 
+import { activityLogger } from "./middleware/logs/activityLogger.js";
+
+app.use(activityLogger);
+
 app.use("/api/v1", routes);
 
 import { initAdmin } from "./util/initAdmin.js";
