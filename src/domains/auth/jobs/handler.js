@@ -1,164 +1,229 @@
-import { sendNewJob, getJobs, dropJob, editJob, getCategories, createNewCategory, applyToJob, leaveJob, setFinalWorker, markJobAsCompleted } from "./controller.js";
+import { _encrypt } from "../../../util/cryptData.js";
+import {
+  applyToWorkSchema,
+  categorySetterSchema,
+  findJobSchema,
+  dropJobSchema,
+  editJobSchema,
+  finishJobSchema,
+  getJobSchema,
+  leaveJobSchema,
+  postJobSchema,
+  startJobSchema,
+} from "../../../validation/jobSchemes.js";
 
-// public
-const handleGetJob = async (req, res) => {
-    try {
-        const { page = 1, limit = 10, username } = req.query;
-        const jobs = await getJobs({ page, limit, username });
-        res.status(200).json(jobs);
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
+import {
+  sendNewJob,
+  getJobs,
+  getJobDetails,
+  dropJob,
+  editJob,
+  getCategories,
+  createNewCategory,
+  applyToJob,
+  leaveJob,
+  setFinalWorker,
+  markJobAsCompleted,
+} from "./controller.js";
+
+export const handleGetJob = async (req, res) => {
+  try {
+    await getJobSchema.validateAsync(req.query);
+    const { page = 1, limit = 10, username } = req.query;
+    const jobs = await getJobs({ page, limit, username });
+    res.status(200).json(jobs);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
 };
 
-//client
-const handlePostJob = async (req, res) => {
-    try {
-        const { title, description, category } = req.body; // falta categoría del trabajo, para futuros filtros de búsqueda
-        const userId = req.currentUser.userId;  
-        const username = req.currentUser.username;
-
-        const createdNewJob = await sendNewJob({ 
-            publisher: username, 
-            userId, 
-            title, 
-            description,
-            category
-        });
-
-        res.status(200).json(createdNewJob);
-    } catch (error) {
-        res.status(400).send(error.message);
+export const handleGetJobDetails = async (req, res) => {
+  try {
+    await findJobSchema.validateAsync(req.params);
+    const { jobId } = req.params;
+    
+    if (!jobId) {
+      return res.status(400).json({ error: "ID de trabajo no proporcionado" });
     }
-}; 
 
-const handleDropJob = async (req, res) => {
-    try {
-        const { jobId } = req.body;
-        const userId = req.currentUser.userId;  
+    const job = await getJobDetails(jobId);
 
-        if (!jobId) {
-            throw Error("jobId must be provided in order to delete a job");
-        }
-
-        const deletedJob = await dropJob({ userId, jobId });
-
-        res.status(200).json(deletedJob);
-    } catch (error) {
-        res.status(400).send(error.message);
+    if (!job) {
+      return res.status(404).json({ error: "Trabajo no encontrado" });  
     }
+
+    res.status(200).json(job);  
+  } catch (error) {
+    res.status(500).json({ error: "Error interno del servidor", "error": error }); 
+  }
 };
 
-const handleEditJob = async (req, res) => {
-    try {
-        const { jobId, title, description, } = req.body;
-        const userId = req.currentUser.userId;
-        
-        if (!jobId) {
-            throw Error("jobId must be provided in order to edit a job");
-        }
-
-        if (!(title || description)) {
-            throw Error("Title or description empty");
-        }
-
-        const editedJob = await editJob({
-            userId, jobId, title, description
-        });
-
-        res.status(200).json(editedJob);
-    } catch (error) {
-        res.status(400).send(error.message);
+export const handleGetJobApplicants = async (req, res) => {
+  try {
+    await findJobSchema.validateAsync(req.params);
+    const { jobId } = req.params;
+    
+    if (!jobId) {
+      return res.status(400).json({ error: "ID de trabajo no proporcionado" });
     }
+
+    const job = await getJobDetails(jobId);
+
+    if (!job) {
+      return res.status(404).json({ error: "Trabajo no encontrado" });  
+    }
+
+    const jobApplicanstIds = job.applicantsId.map(id => _encrypt(id.toString()));
+    res.status(200).json({jobApplicanstIds});  
+  } catch (error) {
+    res.status(500).json({ error: error.message }); 
+  }
+}
+
+export const handlePostJob = async (req, res) => {
+  try {
+    await postJobSchema.validateAsync(req.body);
+    const { title, description, category } = req.body;
+    const userId = req.currentUser.userId;
+    const username = req.currentUser.username;
+
+    const createdNewJob = await sendNewJob({
+      publisher: username,
+      userId,
+      title,
+      description,
+      category,
+    });
+
+    res.status(200).json(createdNewJob);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
 };
 
-const handleStartJob = async (req, res) => {
-    try {
-        const { userId, jobId } = req.body; // both encrypted
-        const currentUserId = req.currentUser.userId;
+export const handleDropJob = async (req, res) => {
+  try {
+    await dropJobSchema.validateAsync(req.params);
+    const { jobId } = req.params;
+    const userId = req.currentUser.userId;
 
-        if (!(userId && jobId)) {
-            throw Error("userId or jobId not found");
-        }
-        
-        const finalWorker = await setFinalWorker({ userId, jobId, currentUserId });
-        
-        res.status(200).json(finalWorker);
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
+    const deletedJob = await dropJob({ userId, jobId });
+    res.status(200).json(deletedJob);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
 };
 
-const handleFinishJob = async (req, res) => {
-    try {
-        const { jobId } = req.body;
-        const currentUserId = req.currentUser.userId;
+export const handleEditJob = async (req, res) => {
+  try {
+    await editJobSchema.validateAsync({ ...req.params, ...req.body });
+    const { jobId } = req.params;
+    const { title, description } = req.body;
+    const userId = req.currentUser.userId;
 
-        if (!jobId) throw Error("A jobId is required");
+    const editedJob = await editJob({
+      userId,
+      jobId,
+      title,
+      description,
+    });
 
-        const completedJob = await markJobAsCompleted({ currentUserId, jobId });
-        res.status(200).json(completedJob);
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
+    res.status(200).json(editedJob);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
 };
 
-//worker 
-const handleApplyToWork = async (req, res) => {
-    try {
-        const { jobId } = req.body;
-        const userId = req.currentUser.userId;
-        
-        if (!jobId) {
-            throw Error("jobId must be provided in order to edit a job");
-        }
+export const handleStartJob = async (req, res) => {
+  try {
+    await startJobSchema.validateAsync({ ...req.params, ...req.body });
+    const { jobId } = req.params;
+    const { userId } = req.body;
+    const currentUserId = req.currentUser.userId;
 
-        const appliedJob = await applyToJob({ userId, jobId });
+    const finalWorker = await setFinalWorker({
+      userId,
+      jobId,
+      currentUserId,
+    });
 
-        res.status(200).json(appliedJob);
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
+    res.status(200).json(finalWorker);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
 };
 
-const handleLeavingJob = async (req, res) => {
-    try {
-        const { jobId } = req.body;
-        const userId = req.currentUser.userId;
-        
-        if (!jobId) {
-            throw Error("jobId must be provided in order to leave a job");
-        }
+export const handleFinishJob = async (req, res) => {
+  try {
+    await finishJobSchema.validateAsync(req.params);
+    const { jobId } = req.params;
+    const currentUserId = req.currentUser.userId;
 
-        const leftJob = await leaveJob({ userId, jobId });
-
-        res.status(200).json(leftJob);
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
+    const completedJob = await markJobAsCompleted({
+      currentUserId,
+      jobId,
+    });
+    res.status(200).json(completedJob);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
 };
 
-//admin
-const handleCategoryGetter = async (req, res) => {
-    try {
-        const categories = await getCategories();
-        res.status(200).json(categories);
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
+export const handleApplyToWork = async (req, res) => {
+  try {
+    await applyToWorkSchema.validateAsync(req.params);
+    const { jobId } = req.params;
+    const userId = req.currentUser.userId;
+
+    const appliedJob = await applyToJob({ userId, jobId });
+    res.status(200).json(appliedJob);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
 };
 
-const handleCategorySetter = async(req, res) => {
-    try {
-        const { category } = req.body;
+export const handleLeavingJob = async (req, res) => {
+  try {
+    await leaveJobSchema.validateAsync(req.params);
+    const { jobId } = req.params;
+    const userId = req.currentUser.userId;
 
-        if (!category) throw Error("A value for category must be provided")
-        const createdNewCategory = await createNewCategory({ category });
-
-        res.status(200).json(createdNewCategory);
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
+    const leftJob = await leaveJob({ userId, jobId });
+    res.status(200).json(leftJob);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
 };
 
-export { handlePostJob, handleGetJob, handleEditJob, handleDropJob, handleStartJob, handleFinishJob, handleApplyToWork, handleLeavingJob, handleCategoryGetter, handleCategorySetter };
+export const handleCategoryGetter = async (req, res) => {
+  try {
+    const categories = await getCategories();
+    res.status(200).json(categories);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
+export const handleCategorySetter = async (req, res) => {
+  try {
+    await categorySetterSchema.validateAsync(req.body);
+    const { category } = req.body;
+
+    let createdCategories;
+    if (Array.isArray(category)) {
+      createdCategories = await Promise.all(
+        category.map(async (cat) => {
+          return await createNewCategory({ category: cat });
+        })
+      );
+    } else {
+      createdCategories = await createNewCategory({ category });
+    }
+
+    res.status(200).json(createdCategories);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
+

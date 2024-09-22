@@ -2,33 +2,33 @@ import { sendPasswordResetOTPEmail, resetUserPassword } from "./controller.js";
 import resetPwdSchema from "./../../../validation/publicSchemes.js";
 
 const pwdOTPHandler = async (req, res) => {
-    try {
-        const { email } = req.body;
-        if (!email) {
-            throw Error("An email is required in order to recover password");
-        }
-        
-        const createdPasswordResetOTP = await sendPasswordResetOTPEmail(email);
-        res.status(200).json(createdPasswordResetOTP);
-    } catch (error) {
-        res.status(400).send(error.message);
+  try {
+    const { email } = req.body;
+    if (!email) {
+      throw Error("An email is required in order to recover password");
     }
+    
+    const createdPasswordResetOTP = await sendPasswordResetOTPEmail(email);
+    res.status(200).json(createdPasswordResetOTP);
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
 };
 
 const pwdResetHandler = async (req, res) => {
-    try {
-        const { error, value } = resetPwdSchema.validate(req.body);
-        if (error) {
-            throw new Error(error.details[0].message);
-        }
-        
-        const { email } = value;
-
-        await resetUserPassword(value);
-        res.status(200).json({ email, reset: true });
-    } catch (error) {
-        res.status(400).send(error.message);
+  try {
+    const { error, value } = resetPwdSchema.validate(req.body);
+    if (error) {
+      throw new Error(error.details[0].message);
     }
+    
+    const { email } = value;
+
+    await resetUserPassword(value);
+    res.status(200).json({ email, reset: true });
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
 };
 
 

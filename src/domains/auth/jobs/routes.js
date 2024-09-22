@@ -1,29 +1,34 @@
 import express from 'express';
 const router = express.Router();
-import  auth from "./../../../middleware/auth.js";
-import { handlePostJob, handleGetJob, handleEditJob, handleDropJob, handleFinishJob, handleStartJob, handleApplyToWork, handleLeavingJob, handleCategorySetter, handleCategoryGetter } from "./handler.js"; 
+import auth from "./../../../middleware/auth.js";
+import { handlePostJob, handleGetJob, handleGetJobDetails, handleGetJobApplicants, handleEditJob, handleDropJob, handleFinishJob, handleStartJob, handleApplyToWork, handleLeavingJob, handleCategorySetter, handleCategoryGetter } from "./handler.js"; 
 
-router.get("/", auth(), handleGetJob);
+// public
+router.get("/", handleGetJob); //ok
 
-router.post("/", auth(["client", "admin"]), handlePostJob);
+router.get("/:jobId", auth(["client", "worker", "admin"]), handleGetJobDetails); //ok
+router.get("/:jobId/applicants", auth(["client", "worker", "admin"]), handleGetJobApplicants); //ok
 
-router.delete("/", auth(["client", "admin"]), handleDropJob);
+// client-admin
+router.post("/", auth(["client", "admin"]), handlePostJob); //ok
 
-router.put("/", auth(["client", "admin"]), handleEditJob);
+router.delete("/:jobId", auth(["client", "admin"]), handleDropJob); //ok
 
-router.post("/start", auth(["client", "admin"]), handleStartJob);
+router.put("/:jobId", auth(["client", "admin"]), handleEditJob); //ok
 
-router.post("/finish", auth(["client", "admin"]), handleFinishJob);
+router.patch("/:jobId/start", auth(["client", "admin"]), handleStartJob); //ok
 
-// worker
-router.post("/apply", auth(["worker", "admin"]), handleApplyToWork);
+router.patch("/:jobId/finish", auth(["client", "admin"]), handleFinishJob); //ok
 
-router.post("/leave", auth(["worker", "admin"]), handleLeavingJob);
+// worker-admin
+router.post("/:jobId/apply", auth(["worker", "admin"]), handleApplyToWork); //ok
 
-// admin 
-router.get("/category", auth(["admin"]), handleCategoryGetter);
+router.delete("/:jobId/apply", auth(["worker", "admin"]), handleLeavingJob); //ok
 
-router.post("/category", auth(["admin"]), handleCategorySetter);
+// categories
+router.get("/categories", auth(["admin"]), handleCategoryGetter); //ok
+
+router.post("/categories", auth(["admin"]), handleCategorySetter); //ok
 
 export default router;
 

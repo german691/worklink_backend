@@ -1,4 +1,3 @@
-//mongodb connection
 import connectToDB from "./config/db.js";
 connectToDB();
 
@@ -8,21 +7,20 @@ const bodyParser = express.json;
 
 import cors from 'cors';
 
-import routes from './routes/index.js'
+import routes from './routes/index.js';
 
 const app = express();
 
 app.use(cors());
 app.use(bodyParser());
 
-import { activityLogger } from "./middleware/logs/activityLogger.js";
+// import activityLogger from "./middleware/logs/activityLogger.js";
+// app.use(activityLogger);
 
-app.use(activityLogger);
-
-app.use("/api/v1", routes);
+app.use("/api", routes);
 
 import { initAdmin } from "./util/initAdmin.js";
-initAdmin()
+initAdmin();
 
 export default app;
 
