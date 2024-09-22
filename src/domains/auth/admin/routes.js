@@ -1,56 +1,92 @@
-const express = require("express");
+import express from 'express';
 const router = express.Router();
-const { authenticateAdmin, createNewAdmin, getUsersInfo} = require("./controller");
-const auth = require("./../../../middleware/auth");
+import auth from "./../../../middleware/auth.js";
 
-router.post("/auth", async (req, res) => {
-    try {
-        let { username, password } = req.body;
+import {
+    handleAdminLogin,
+    handleAdminRegister,
+    handleUpdateAdminInfo,
+    handleResetAdminPassword,
+    handleGetAdminList,
+    handleDeleteAdmin,
+} from './handler/adminHandler.js';
 
-        if (!username) throw new Error('Empty username');
-        if (!password) throw new Error('Empty password');
+import {
+    handleGetAllJobs,
+    handleGetJobById,
+    handleCreateJob,
+    handleUpdateJob,
+    handleDeleteJob,
+    handleFilterJobs,
+    handleGetJobCategories,
+    handleCreateJobCategory,
+    handleDeleteJobCategory,
+} from './handler/jobHandler.js';
 
-        const authenticatedUser = await authenticateAdmin({ username, password });
+import {
+    handleGetLogs,
+    handleGetLogById,
+    handleDeleteLog,
+    handleFilterLogs,
+    handleExportLogs,
+    handleSearchLogs,
+} from './handler/logsHandler.js';
 
-        res.status(200).json(authenticatedUser);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-})
+import {
+    handleGetUsersInfo,
+    handleGetUserById,
+    handleUpdateUserRole,
+    handleCreateNewUser,
+    handleUpdateUserInfo,
+    handleDeactivateUser,
+    handleReactivateUser,
+    handleGetUserActivityLogs,
+    handleGenerateUserReport,
+    handleExportUserList,
+    handleUserPasswordReset
+} from './handler/userHandler.js';
 
-router.post("/register", async (req, res) => {
-    const usernameRegex = /^[a-zA-Z0-9_-]{1,24}$/;
-    const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{8,}$/;
+// Admin management
+router.post("/auth", handleAdminLogin);
+router.post("/register", auth(["superadmin"]), handleAdminRegister);
+router.get("/user_info", auth(["admin"]), handleGetUsersInfo);
+router.get("/users/:userId", auth(["admin"]), handleGetUserById);
+router.put("/users/:userId/role", auth(["admin"]), handleUpdateUserRole);
+router.put("/users/:userId", auth(["admin"]), handleUpdateUserInfo);
+router.post("/users", auth(["admin"]), handleCreateNewUser);
+router.delete("/users/:userId", auth(["admin"]), handleDeactivateUser);
+router.put("/users/:userId/reactivate", auth(["admin"]), handleReactivateUser);
+router.put("/users/:userId/reset_password", auth(["admin"]), handleUserPasswordReset);
 
-    try {
-        const { username, password } = req.body; 
-        const key = req.headers["x-admin-key"];
+// Admin account management
+router.get("/admins", auth(["admin"]), handleGetAdminList);
+router.delete("/admins/:adminId", auth(["superadmin"]), handleDeleteAdmin);
+router.put("/admins/:adminId", auth(["admin"]), handleUpdateAdminInfo);
+router.get("/admin/:adminId", auth(["admin"]), handleResetAdminPassword);
 
-        if (!(username && usernameRegex.test(username))) {
-            throw new Error("Username can only contain alphanumeric characters, underscores, and hyphens");
-        } else if (!(password && passwordRegex.test(password))) {
-            throw new Error("Password must be at least 8 characters long and contain at least one uppercase letter, one digit, and one special character");
-        } else if (key !== process.env.ADMIN_KEY) {
-            throw new Error("Invalid key");
-        }
 
-        const newAdmin = await createNewAdmin({ username, password });
+// Logs management
+router.get("/logs", auth(["admin"]), handleGetLogs);
+router.get("/logs/:logId", auth(["admin"]), handleGetLogById);
+router.delete("/logs/:logId", auth(["superadmin"]), handleDeleteLog);
+router.post("/logs/filter", auth(["admin"]), handleFilterLogs);
+router.get("/logs/export", auth(["superadmin"]), handleExportLogs);
+router.post("/logs/search", auth(["admin"]), handleSearchLogs);
 
-        res.status(200).json(newAdmin);
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
-})
+// Job management
+router.get("/jobs", auth(["admin"]), handleGetAllJobs);
+router.get("/jobs/:jobId", auth(["admin"]), handleGetJobById);
+router.post("/jobs", auth(["admin"]), handleCreateJob);
+router.put("/jobs/:jobId", auth(["admin"]), handleUpdateJob);
+router.delete("/jobs/:jobId", auth(["admin"]), handleDeleteJob);
+router.post("/jobs/filter", auth(["admin"]), handleFilterJobs);
+router.get("/jobs/categories", auth(["admin"]), handleGetJobCategories);
+router.post("/jobs/categories", auth(["admin"]), handleCreateJobCategory);
+router.delete("/jobs/categories/:categoryId", auth(["admin"]), handleDeleteJobCategory);
 
-//rutas para testing
-//ver info de usuario pero con id encriptada
-router.get("/user_info", auth(["admin"]), async (req, res) => {
-    try {
-        const userInfo = await getUsersInfo();
-        res.status(200).json(userInfo);
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
-});
+// User activity management
+router.get("/users/:userId/activity", auth(["admin"]), handleGetUserActivityLogs);
+router.post("/users/report", auth(["admin"]), handleGenerateUserReport);
+router.get("/users/export", auth(["admin"]), handleExportUserList);
 
-module.exports = router;
+export default router;

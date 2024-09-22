@@ -3,35 +3,20 @@
 Este proyecto es una Web API desarrollada con Express y Node.js para la
 gestión de solicitudes y postulaciones de trabajo. Es una herramienta de
 búsqueda de trabajo que permite la interacción entre clientes y
-trabajadores. Este proyecto fue desarrollado como parte del trabajo
-práctico de la materia Prácticas Profesionalizantes 3 en el Instituto
+trabajadores. El backend de este proyecto fue desarrollado en base a la materia "Prácticas Profesionalizantes 3" del Instituto
 San Roque González de Posadas, Misiones, Argentina.
 
 ## Funcionalidades implementadas hasta el momento
 
-### **Registro de Usuarios:** 
-Los usuarios pueden registrarse y autenticarse en la plataforma.
 ### **Tipos de Usuarios:**
 - **Clientes:** Pueden publicar solicitudes de trabajo.
 - **Trabajadores:** Pueden postularse a las solicitudes de trabajo y esperar a ser aceptados.
-- **Administrador:** Gestiona y supervisa la plataforma.
+- **Administrador (SIN IMPLMENTAR):** Gestiona y supervisa la plataforma.
+- **LOS ENDPOINTS DE ADMIN NO ESTÁN IMPLEMENTADOS EN SU TOTALIDAD**
 ### **Publicación de Solicitudes:** 
 Los clientes pueden crear y publicar solicitudes de trabajo.
 ### **Postulación a Solicitudes:** 
 Los trabajadores pueden ver las solicitudes publicadas y postularse a ellas.
-
-## Tecnologías Utilizadas
-
- - **Node.js:** Entorno de ejecución para JavaScript en el servidor.
- - **Express:** Framework web para Node.js.
- - **MongoDB:** Base de datos NoSQL para el almacenamiento de datos.
- - **JWT (JSON Web Tokens):** Para la autenticación y autorización de usuarios.
- - **Mongoose:** ODM (Object Data Modeling) para MongoDB y Node.js.
- - **BCrypt:** Para el hash de contraseñas.
- - **Dotenv:** Para la gestión de variables de entorno.
- - **Cors:** Middleware para habilitar CORS (Cross-Origin Resource Sharing).
- - **Nodemailer:** Para el envío de correos electrónicos.
- - **Nodemon:** Herramienta que ayuda a desarrollar aplicaciones basadas en Node.js reiniciando automáticamente la aplicación cuando se detectan cambios.
 
 ## Instalación
 
@@ -45,122 +30,585 @@ Los trabajadores pueden ver las solicitudes publicadas y postularse a ellas.
     `npm install`
 
 4.  Configura las variables de entorno en un archivo `.env`:
-    ```env
-    MONGODB_URI=(Tu conexión a MongoDB)
-    PORT=3000
-    TOKEN_KEY=SHA256 BASE64
-    TOKEN_EXPIRY=24h
-    CRYPT_KEY=SHA256 BASE64
-    ADMIN_KEY=SHA256 BASE64
-    AUTH_EMAIL=(Tu email de contacto)
-    AUTH_PASSWORD=SHA256 HEX
-    
 
 6.  Inicia el servidor:
     `npm run dev`
 
+**Configuración del Entorno**
+
+Este proyecto requiere ciertas variables de entorno. Crea un archivo `.env` en la raíz de tu proyecto y añade lo siguiente:
+
+-   `MONGODB_URI`: Conexión a MongoDB.\
+    **Formato**: `mongodb+srv://<usuario>:<contraseña>@<cluster>.mongodb.net/?retryWrites=true&w=majority&appName=<nombreDeTuApp>`
+
+-   `PORT`: Puerto de la aplicación (Por ejemplo, `5000`).
+
+-   `TOKEN_KEY`: Clave para tokens JWT.\
+    **Formato**: String en formato SHA-256 codificado en base64.
+
+-   `TOKEN_EXPIRY`: Duración del token.\
+    **Formato**: String, por defecto `24h`.
+
+-   `CRYPT_KEY`: Clave para cifrado.\
+    **Formato**: String en formato SHA-256 codificado en base64.
+
+-   `AUTH_EMAIL`: Email de autenticación.
+    **Formato**: String, email genérico `tu_email@ejemplo.com`.
+
+-   `AUTH_PASSWORD`: Contraseña de autenticación.
+    **Formato**: String, contraseña genérica.
+
+-   `DEFAULT_ADMIN_USERNAME`: Usuario administrador.
+
+-   `DEFAULT_ADMIN_PASSWORD`: Contraseña del administrador.
+
 ## Uso
 
-### Registro de Usuario
+#### Rutas de Users
 
-- **Endpoint:** `POST /api/v1/user/signup`
-- **Body:**
-  ```json
-  { "username": "example", "email": "example@domain.abc", "password": "Example1$", "userType": "worker or client", "name": "example", "surname": "example", "birthdate": "1985-04-12T09:20:00Z" }
+1.  **Registro de Usuario**
+    -   Método: `POST api/user/signup`
+2.  **Inicio de Sesión**
+    -   Método: `POST api/user/`
 
-### Autenticación de Usuario:
+#### Rutas de Jobs
 
-- **Endpoint:** POST `/api/v1/user`
-- **Body:**
-  ```json
-  { "username": "example", "password": "example" }
-  { "email": "example@domain.abc", "password": "example" }
-- x-access-token requerido para cualquier acción en ruta "auth"
-  
-## Rutas públicas
+1.  **Obtener Trabajos**
+    -   Método: `GET /api/jobs`
+2.  **Obtener Detalles de un Trabajo**
+    -   Método: `GET /api/jobs/:jobId`
+3.  **Obtener Solicitantes de un Trabajo**
+    -   Método: `GET /api/jobs/:jobId/applicants`
+4.  **Publicar un Trabajo**
+    -   Método: `POST /api/jobs`
+5.  **Eliminar un Trabajo**
+    -   Método: `DELETE /api/jobs/:jobId`
+6.  **Editar un Trabajo**
+    -   Método: `PUT /api/jobs/:jobId`
+7.  **Iniciar un Trabajo**
+    -   Método: `PATCH /api/jobs/:jobId/start`
+8.  **Finalizar un Trabajo**
+    -   Método: `PATCH /api/jobs/:jobId/finish`
+9.  **Aplicar a un Trabajo**
+    -   Método: `POST /api/jobs/:jobId/apply`
+10. **Dejar un Trabajo**
+    -   Método: `DELETE /api/jobs/:jobId/apply`
+11. **Obtener Categorías**
+    -   Método: `GET /api/jobs/categories`
+12. **Crear Categorías**
+    -   Método: `POST /api/jobs/categories`
 
-### Ver Status:
-**Endpoint:** `GET /api/v1/status`
+#### Rutas públicas:
 
-### Verificar Email:
-**Endpoint:** `POST /api/v1/email_verification/verify`
-- **Body:**
-  ```json
-  { "otp": "123456", "email": "example@domain.abc" }
+1. **Enviar OTP**
+    -   Método: `POST /api/otp/`
+2. **Verificar OTP**
+    -   Método: `POST /api/otp/verify`
+3. **Enviar OTP para verificación de email**
+    -   Método: `POST /api/email_verification`
+4. **Verificar email con OTP**
+    -   Método: `POST /api/email_verification/verify`
+5. **Enviar OTP para reestablecer contraseña**
+    -   Método: `POST /api/forgot_password`
+6. **Verificar OTP para reestablecer contraseña**
+    -   Método: `POST /api/forgot_password/reset`
+
+#### IMPORTANTE: ¡Las rutas ADMIN siguen en desarrollo y no están completamente implementadas!
+
+### Detalles de Rutas
+
+#### Registro de Usuario
+
+-   **Ruta:** `POST /signup`
+-   **Cuerpo (JSON):**
+
+```json
+{
+  "username": "user123",
+  "email": "user@example.com",
+  "password": "securePassword",
+  "userType": "client",
+  "name": "John",
+  "surname": "Doe",
+  "birthdate": "1990-01-01" // puede ser iso86 para datetime
+}
+```
+```javascript
+fetch(`${url}/user/signup`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ username: "user123", email: "user@example.com", password: "securePassword", userType: "client", name: "John", surname: "Doe", birthdate: "1990-01-01" })
+})
+
+axios.post(`${url}/user/signup`, {
+  username: "user123",
+  email: "user@example.com",
+  password: "securePassword",
+  userType: "client",
+  name: "John",
+  surname: "Doe",
+  birthdate: "1990-01-01"
+})
+```
+
+#### 2\. Inicio de Sesión
+
+-   **Ruta:** `POST /`
+-   **Cuerpo (JSON):**
+
+```json
+{
+  "username": "user123",
+  "password": "securePassword"
+}
+```
+
+```javascript
+fetch(`${url}/user/`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ username: "user123", password: "securePassword" })
+})
+ 
+axios.post(`${url}/user/`, {
+  username: "user123",
+  password: "securePassword"
+})
+```
+
+#### 3\. Obtener Trabajos
+
+-   **Ruta:** `GET /api/jobs`
+-   **Query:**
+    -   `page` (opcional, número entero, mínimo 1)
+    -   `limit` (opcional, número entero, mínimo 1)
+    -   `username` (opcional, cadena) 
+
+```javascript
+fetch(`${url}/jobs?page=1&limit=10&username=user123`, {
+  method: 'GET',
+  headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' }
+})
+
+axios.get(`${url}/jobs`, {
+  headers: { 'x-access-token': '<token>' },
+  params: { page: 1, limit: 10, username: 'user123' }
+})
+```
+
+#### 4\. Obtener Detalles de un Trabajo
+
+-   **Ruta:** `GET /api/jobs/:jobId`
+-   **Params:**
+    -   `jobId` (requerido, cadena)
+    -   
+
+```javascript
+fetch(`${url}/jobs/12345`, {
+  method: 'GET',
+  headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' }
+})
+
+axios.get(`${url}/jobs/12345`, { headers: { 'x-access-token': '<token>' } })
+```
+
+#### 5\. Obtener Solicitantes de un Trabajo
+
+-   **Ruta:** `GET /api/jobs/:jobId/applicants`
+-   **Params:**
+    -   `jobId` (requerido, cadena) 
+    
+```javascript
+fetch(`${url}/api/jobs/12345/applicants`, {
+  method: 'GET',
+  headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' }
+})
+
+axios.get(`${url}/jobs/12345/applicants`, { headers: { 'x-access-token': '<token>' } })
+```
+
+#### 6\. Publicar un Trabajo
+
+-   **Ruta:** `POST /api/jobs`
+-   **Body:**
+
+```json
+{
+  "title": "Desarrollador Web",
+  "description": "Se busca desarrollador con experiencia en React.",
+  "category": "Desarrollo"
+}
+```
+ 
+```javascript
+fetch(`${url}/api/jobs`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' },
+  body: JSON.stringify({ title: "Desarrollador Web", description: "Se busca desarrollador con experiencia en React.", category: "Desarrollo" })
+})
+
+axios.post(`${url}/api/jobs`, {
+  title: "Desarrollador Web",
+  description: "Se busca desarrollador con experiencia en React.",
+  category: "Desarrollo"
+}, { headers: { 'x-access-token': '<token>' } })
+```
+
+#### 7\. Eliminar un Trabajo
+
+-   **Ruta:** `DELETE /api/jobs/:jobId`
+-   **Params:**
+    -   `jobId` (requerido, cadena) 
+
+```javascript
+fetch(`${url}/api/jobs/12345`, {
+  method: 'DELETE',
+  headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' }
+})
+
+axios.delete(`${url}/api/jobs/12345`, { headers: { 'x-access-token': '<token>' } })
+```
+#### 8\. Editar un Trabajo
+
+-   **Ruta:** `PUT /api/jobs/:jobId`
+-   **Params:**
+    -   `jobId` (requerido, cadena)
+-   **Body:**
 
 
-### Resetear contraseña:
-**Endpoint:** `POST /api/v1/forgot_password`
-- **Body:**
-  ```json
-  { "email": "example@domain.abc" }
+```json
+{
+  "title": "Desarrollador Senior",
+  "description": "Se busca desarrollador con experiencia en Node.js."
+}
+```
+ 
+```javascript
+fetch(`${url}/jobs/12345`, {
+  method: 'PUT',
+  headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' },
+  body: JSON.stringify({ title: "Desarrollador Senior", description: "Se busca desarrollador con experiencia en Node.js." })
+})
 
-### Verificar cambio de contraseña:
-**Endpoint:** `POST /api/v1/forgot_password/verify`
-- **Body:**
-  ```json
-  { "otp": "123456", "email": "example@domain.abc" }
-  
-## Cliente:
+axios.put(`${url}/jobs/12345`, {
+  title: "Desarrollador Senior",
+  description: "Se busca desarrollador con experiencia en Node.js."
+}, { headers: { 'x-access-token': '<token>' } })
+```
 
-### Listar Solicitudes de Trabajo:
-- **Endpoint:** `GET /api/v1/jobs`
+#### 9\. Iniciar un Trabajo
 
-### Publicar Solicitud de Trabajo:
-- **Endpoint:** `POST /api/v1/jobs`
-- **Body:**
-  ```json
-  { "title": "example", "description": "example", "category": "example" }
-  
-- Se deben primero crear las categorías desde los enpoints de administrador
+-   **Ruta:** `PATCH /api/jobs/:jobId/start`
+-   **Params:**
+    -   `jobId` (requerido, cadena)
+-   **Body:**
 
-### Dar de baja Solicitud de Trabajo:
-- **Endpoint:** `DELETE /api/v1/jobs`
-- **Body:**
-  ```json
-  { "jobId": "encrypted string" }
+```json
+{
+  "userId": "user123"
+}
+```
+ 
+```javascript
+fetch(`${url}/jobs/12345/start`, {
+  method: 'PATCH',
+  headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' },
+  body: JSON.stringify({ userId: "user123" })
+})
 
-### Editar Solicitud de Trabajo:
-- **Endpoint:** `PUT /api/v1/jobs`
-- **Body:**
-  ```json
-  { "jobId": "encrypted string", "title": "example title", "description": "example title description" }
+axios.patch(`${url}/jobs/12345/start`, { userId: "user123" }, { headers: { 'x-access-token': '<token>' } })
+```
 
-### Fijar trabajador final en Solicitud de Trabajo:
-- **Endpoint: `POST /api/v1/jobs/start`
-- **Body:**
-  ```json
-  { "userId": "encrypted string", "jobId": "encrypted string" }    
+#### 10\. Finalizar un Trabajo
 
-### Marcar Solicitud de Trabajo como Finalizado:
-- **Endpoint:** `POST /api/v1/jobs/finish`
-- **Body:**
-  ```json
-  { "jobId": "encrypted string" }
+-   **Ruta:** `PATCH /api/jobs/:jobId/finish`
+-   **Params:**
+    -   `jobId` (requerido, cadena) 
 
-## Trabajador:
+```javascript
+fetch(`${url}/jobs/12345/finish`, {
+  method: 'PATCH',
+  headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' }
+})
 
-### Aplicar a Solicitud de Trabajo:
-- **Endpoint:** `POST /api/v1/jobs/apply`
-- **Body:**
-  ```json
-  { "jobId": "encrypted string" }
+axios.patch(`${url}/jobs/12345/finish`, {}, { headers: { 'x-access-token': '<token>' } })
+```
 
-### Abandonar Solicitud de Trabajo:
-- **Endpoint:** `POST /api/v1/jobs/leave`
-- **Body:**
-  ```json
-  { "jobId": "encrypted string" }
+#### 11\. Aplicar a un Trabajo
 
-Contribuciones
---------------
+-   **Ruta:** `POST /api/jobs/:jobId/apply`
+-   **Params:**
+    -   `jobId` (requerido, cadena) 
 
-Las contribuciones son bienvenidas. Por favor, abre un issue o un pull request para discutir cualquier cambio que quieras hacer.
-A futuro se nombrarán agradecimientos a los diferentes colaboradores de la institución.
+```javascript
+fetch(`${url}/jobs/12345/apply`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' }
+})
 
-Licencia
---------
+axios.post(`${url}/jobs/12345/apply`, {}, { headers: { 'x-access-token': '<token>' } })
+```
 
-Este carece de licencia, es para fines meramente educativos.
+#### 12\. Dejar un Trabajo
 
-## Autor: Delgado Pablo German
+-   **Ruta:** `DELETE /api/jobs/:jobId/apply`
+-   **Params:**
+    -   `jobId` (requerido, cadena) 
+
+```javascript
+fetch(`${url}/jobs/12345/apply`, {
+  method: 'DELETE',
+  headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' }
+})
+
+axios.delete(`${url}/jobs/12345/apply`, { headers: { 'x-access-token': '<token>' } })
+```
+
+#### 13\. Obtener Categorías
+
+-   **Ruta:** `GET /api/jobs/categories` 
+
+```javascript
+fetch(`${url}/jobs/categories`, {
+  method: 'GET',
+  headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' }
+})
+
+axios.get(`${url}/jobs/categories`, { headers: { 'x-access-token': '<token>' } })
+```
+
+#### 14\. Crear Categorías
+
+-   **Ruta:** `POST /api/jobs/categories`
+-   **Body:**
+
+```json
+{
+  "category": ["Desarrollo", "Diseño"]
+}
+```
+ 
+```javascript
+fetch(`${url}/jobs/categories`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' },
+  body: JSON.stringify({ category: ["Desarrollo", "Diseño"] })
+})
+
+axios.post(`${url}/jobs/categories`, {
+  category: ["Desarrollo", "Diseño"]
+}, { headers: { 'x-access-token': '<token>' } })
+```
+### Respuestas
+
+-   **Respuesta Éxito (200):**
+
+```javascript
+{ "username": "user123", "email": "user@example.com", "userType": "client", "name": "John", "surname": "Doe", "birthdate": "1990-01-01" }
+```
+-   **Respuesta Error (400):**
+
+```json
+{ "error": "Mensaje de error de validación" }
+```
+
+#### 15\. Enviar OTP
+
+```javascript
+fetch(`${url}/otp`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    email: 'usuario@example.com',
+    subject: 'Verificación de OTP',
+    message: 'Su código OTP es: 123456',
+    duration: 10,
+  }),
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch(error => console.error('Error:', error));
+
+axios.post(`${url}/otp`, {
+  email: 'usuario@example.com',
+  subject: 'Verificación de OTP',
+  message: 'Su código OTP es: 123456',
+  duration: 10,
+})
+.then(response => console.log(response.data))
+.catch(error => console.error('Error:', error));
+```
+
+**Respuesta esperada**:
+
+
+```json
+{
+  "otp": "123456", // OTP generado
+  "message": "OTP enviado con éxito"
+}
+```
+
+#### 16\. Verificar OTP
+
+```javascript
+fetch(`${url}/otp/verify`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    email: 'usuario@example.com',
+    otp: '123456',
+  }),
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch(error => console.error('Error:', error));
+
+axios.post(`${url}/otp/verify`, {
+  email: 'usuario@example.com',
+  otp: '123456',
+})
+.then(response => console.log(response.data))
+.catch(error => console.error('Error:', error));
+```
+
+```json
+{
+  "valid": true // o false dependiendo de si el OTP es válido
+}
+```
+
+#### 17\. Enviar OTP para verificación de email
+
+```javascript
+fetch(`${url}/email_verification`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    email: 'usuario@example.com',
+  }),
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch(error => console.error('Error:', error));
+
+axios.post(`${url}/email_verification`, {
+  email: 'usuario@example.com',
+})
+.then(response => console.log(response.data))
+.catch(error => console.error('Error:', error));
+```
+
+**Respuesta esperada**:
+
+```json
+{
+  "message": "OTP de verificación enviado"
+}
+```
+
+#### 18\. Verificar email con OTP
+
+```javascript
+fetch(`${url}/email_verification/verify`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    email: 'usuario@example.com',
+    otp: '123456',
+  }),
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch(error => console.error('Error:', error));
+
+axios.post(`${url}/email_verification/verify`, {
+  email: 'usuario@example.com',
+  otp: '123456',
+})
+.then(response => console.log(response.data))
+.catch(error => console.error('Error:', error));`
+```
+**Respuesta esperada**:
+
+```json
+{
+  "email": "usuario@example.com",
+  "verify": true // o false si la verificación falla
+}
+```
+
+#### 19\. Enviar OTP para restablecer contraseña
+
+```javascript
+fetch(`${url}/forgot_password`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    email: 'usuario@example.com',
+  }),
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch(error => console.error('Error:', error));
+
+axios.post(`${url}/forgot_password`, {
+  email: 'usuario@example.com',
+})
+.then(response => console.log(response.data))
+.catch(error => console.error('Error:', error));
+```
+**Respuesta esperada**:
+
+```json
+{
+  "message": "OTP para restablecer contraseña enviado"
+}
+```
+
+#### 20\. Restablecer contraseña
+
+```javascript
+fetch(`${url}/forgot_password/reset`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    email: 'usuario@example.com',
+    newPassword: 'nuevaContraseña',
+    confirmPassword: 'nuevaContraseña',
+  }),
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch(error => console.error('Error:', error));
+
+axios.post(`${url}/forgot_password/reset`, {
+  email: 'usuario@example.com',
+  newPassword: 'nuevaContraseña',
+  confirmPassword: 'nuevaContraseña',
+})
+.then(response => console.log(response.data))
+.catch(error => console.error('Error:', error));
+```
+
+**Respuesta esperada**:
+
+
+```json 
+{
+  "email": "usuario@example.com",
+  "reset": true
+}
+```

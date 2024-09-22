@@ -1,4 +1,4 @@
-const bcrypt = require("bcrypt");
+import bcrypt from "bcrypt";
 
 const hashData = async (data, saltRounds = 10) => {
   try {
@@ -18,4 +18,4 @@ const verifyHashedData = async (unhasedPassword, hashedPassword) => {
   }
 };
 
-module.exports = { hashData, verifyHashedData };
+export { hashData, verifyHashedData };
