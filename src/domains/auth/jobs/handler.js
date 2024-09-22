@@ -101,8 +101,8 @@ export const handlePostJob = async (req, res) => {
 
 export const handleDropJob = async (req, res) => {
   try {
-    await dropJobSchema.validateAsync(req.body);
-    const { jobId } = req.body;
+    await dropJobSchema.validateAsync(req.params);
+    const { jobId } = req.params;
     const userId = req.currentUser.userId;
 
     const droppedJob = await dropJob({ jobId, userId });
@@ -114,8 +114,9 @@ export const handleDropJob = async (req, res) => {
 
 export const handleEditJob = async (req, res) => {
   try {
-    await editJobSchema.validateAsync(req.body);
-    const { jobId, title, description } = req.body;
+    await editJobSchema.validateAsync({ ...req.params, ...req.body });
+    const { jobId } = req.params;
+    const { title, description } = req.body;
     const userId = req.currentUser.userId;
 
     const editedJob = await editJob({ jobId, userId, title, description });
@@ -127,8 +128,8 @@ export const handleEditJob = async (req, res) => {
 
 export const handleApplyToJob = async (req, res) => {
   try {
-    await applyToWorkSchema.validateAsync(req.body);
-    const { jobId } = req.body;
+    await applyToWorkSchema.validateAsync(req.params);
+    const { jobId } = req.params;
     const userId = req.currentUser.userId;
 
     const appliedJob = await applyToJob({ jobId, userId });
@@ -140,8 +141,8 @@ export const handleApplyToJob = async (req, res) => {
 
 export const handleLeaveJob = async (req, res) => {
   try {
-    await leaveJobSchema.validateAsync(req.body);
-    const { jobId } = req.body;
+    await leaveJobSchema.validateAsync(req.params);
+    const { jobId } = req.params;
     const userId = req.currentUser.userId;
 
     const leftJob = await leaveJob({ jobId, userId });
@@ -153,9 +154,9 @@ export const handleLeaveJob = async (req, res) => {
 
 export const handleSetFinalWorker = async (req, res) => {
   try {
-    await startJobSchema.validateAsync(req.body);
-    const { jobId } = req.body;
-    const userId = req.currentUser.userId;
+    await startJobSchema.validateAsync({ ...req.params, ...req.body });
+    const { jobId } = req.params;
+    const { userId } = req.body;
 
     const updatedJob = await setFinalWorker({ userId, jobId, currentUserId: req.currentUser.userId });
     res.status(200).json(updatedJob);
@@ -166,8 +167,8 @@ export const handleSetFinalWorker = async (req, res) => {
 
 export const handleMarkJobAsCompleted = async (req, res) => {
   try {
-    await finishJobSchema.validateAsync(req.body);
-    const { jobId } = req.body;
+    await finishJobSchema.validateAsync(req.params);
+    const { jobId } = req.params;
 
     const completedJob = await markJobAsCompleted({ jobId, currentUserId: req.currentUser.userId });
     res.status(200).json(completedJob);

@@ -6,7 +6,7 @@ import {
     handleAdminLogin,
     handleAdminRegister,
     handleUpdateAdminInfo,
-    handleResetUserPassword,
+    handleResetAdminPassword,
     handleGetAdminList,
     handleDeleteAdmin,
 } from './handler/adminHandler.js';
@@ -40,15 +40,15 @@ import {
     handleUpdateUserInfo,
     handleDeactivateUser,
     handleReactivateUser,
-    handleForceUserPasswordReset,
     handleGetUserActivityLogs,
     handleGenerateUserReport,
     handleExportUserList,
+    handleUserPasswordReset
 } from './handler/userHandler.js';
 
 // Admin management
 router.post("/auth", handleAdminLogin);
-router.post("/register", handleAdminRegister);
+router.post("/register", auth(["superadmin"]), handleAdminRegister);
 router.get("/user_info", auth(["admin"]), handleGetUsersInfo);
 router.get("/users/:userId", auth(["admin"]), handleGetUserById);
 router.put("/users/:userId/role", auth(["admin"]), handleUpdateUserRole);
@@ -56,11 +56,14 @@ router.put("/users/:userId", auth(["admin"]), handleUpdateUserInfo);
 router.post("/users", auth(["admin"]), handleCreateNewUser);
 router.delete("/users/:userId", auth(["admin"]), handleDeactivateUser);
 router.put("/users/:userId/reactivate", auth(["admin"]), handleReactivateUser);
-router.put("/users/:userId/reset_password", auth(["admin"]), handleResetUserPassword);
+router.put("/users/:userId/reset_password", auth(["admin"]), handleUserPasswordReset);
+
+// Admin account management
 router.get("/admins", auth(["admin"]), handleGetAdminList);
 router.delete("/admins/:adminId", auth(["superadmin"]), handleDeleteAdmin);
 router.put("/admins/:adminId", auth(["admin"]), handleUpdateAdminInfo);
-router.put("/users/:userId/force_password_reset", auth(["admin"]), handleForceUserPasswordReset);
+router.get("/admin/:adminId", auth(["admin"]), handleResetAdminPassword);
+
 
 // Logs management
 router.get("/logs", auth(["admin"]), handleGetLogs);

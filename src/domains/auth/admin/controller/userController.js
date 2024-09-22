@@ -55,7 +55,7 @@ export const reactivateUser = async (userId) => {
   return user.save();
 };
 
-export const forcePasswordReset = async (userId, newPassword) => {
+export const userPasswordReset = async (userId, newPassword) => {
   const hashedPassword = await hashData(newPassword);
   return User.findByIdAndUpdate(userId, { password: hashedPassword }, { new: true });
 };

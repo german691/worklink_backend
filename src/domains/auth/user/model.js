@@ -15,7 +15,7 @@ const UserSchema = new Schema({
   // address: String,
   // phone: String,
   // info: String,
-  active: { type: Boolean, default: true },
+  isActive: { type: Boolean, default: true },
 });
 
 const User = mongoose.model("User", UserSchema);

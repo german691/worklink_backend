@@ -22,13 +22,13 @@ const sendPasswordResetOTPEmail = async (email) => {
   return sendOTP(otpDetails);
 };
 
-const resetUserPassword = async ({ email, otp, newPassword }) => {
+const resetUserPassword = async ({ email, otp, password }) => {
   const validOtp = await verifyOTP({ email, otp });
   if (!validOtp) {
     throw new Error("Invalid code passed. Check your inbox.");
   }
 
-  const hashedNewPassword = await hashData(newPassword);
+  const hashedNewPassword = await hashData(password);
   await User.updateOne({ email }, { password: hashedNewPassword });
   await deleteOTP(email);
 };

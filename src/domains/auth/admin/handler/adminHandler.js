@@ -3,7 +3,7 @@ import {
   authenticateAdmin, 
   createNewAdmin,
   updateAdminInfo,
-  resetUserPassword,
+  resetAdminPassword,
   getAdminList,
   deleteAdmin
 } from "../controller/adminController.js";
@@ -46,10 +46,11 @@ export const handleUpdateAdminInfo = async (req, res) => {
   }
 };
 
-export const handleResetUserPassword = async (req, res) => {
+export const handleResetAdminPassword = async (req, res) => {
   try {
+    const { userId } = req.params;
     const { newPassword } = req.body;
-    await resetUserPassword(req.params.userId, newPassword);
+    await resetAdminPassword(userId, newPassword);
     res.status(200).send("Password reset successfully");
   } catch (error) {
     handleErrorResponse(res, error);

@@ -69,7 +69,7 @@ Este proyecto requiere ciertas variables de entorno. Crea un archivo `.env` en l
 1.  **Registro de Usuario**
     -   Método: `POST api/user/signup`
 2.  **Inicio de Sesión**
-    -   Método: `POST api/user/login`
+    -   Método: `POST api/user/`
 
 #### Rutas de Jobs
 
@@ -113,11 +113,11 @@ Este proyecto requiere ciertas variables de entorno. Crea un archivo `.env` en l
 6. **Verificar OTP para reestablecer contraseña**
     -   Método: `POST /api/forgot_password/reset`
 
-#### Las rutas ADMIN siguen en desarrollo y no están completamente implementadas.
+#### IMPORTANTE: ¡Las rutas ADMIN siguen en desarrollo y no están completamente implementadas!
 
 ### Detalles de Rutas
 
-#### 1\. Registro de Usuario
+#### Registro de Usuario
 
 -   **Ruta:** `POST /signup`
 -   **Cuerpo (JSON):**
@@ -130,18 +130,17 @@ Este proyecto requiere ciertas variables de entorno. Crea un archivo `.env` en l
   "userType": "client",
   "name": "John",
   "surname": "Doe",
-  "birthdate": "1990-01-01"
+  "birthdate": "1990-01-01" // puede ser iso86 para datetime
 }
 ```
 ```javascript
-fetch('/signup', {
+fetch(`${url}/user/signup`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ username: "user123", email: "user@example.com", password: "securePassword", userType: "client", name: "John", surname: "Doe", birthdate: "1990-01-01" })
 })
-```
-```javascript
-axios.post('/signup', {
+
+axios.post(`${url}/user/signup`, {
   username: "user123",
   email: "user@example.com",
   password: "securePassword",
@@ -154,7 +153,7 @@ axios.post('/signup', {
 
 #### 2\. Inicio de Sesión
 
--   **Ruta:** `POST /login`
+-   **Ruta:** `POST /`
 -   **Cuerpo (JSON):**
 
 ```json
@@ -163,15 +162,15 @@ axios.post('/signup', {
   "password": "securePassword"
 }
 ```
+
 ```javascript
-fetch('/login', {
+fetch(`${url}/user/`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ username: "user123", password: "securePassword" })
 })
- ```
-```javascript
-axios.post('/login', {
+ 
+axios.post(`${url}/user/`, {
   username: "user123",
   password: "securePassword"
 })
@@ -186,45 +185,46 @@ axios.post('/login', {
     -   `username` (opcional, cadena) 
 
 ```javascript
-fetch('/api/jobs?page=1&limit=10&username=user123', {
+fetch(`${url}/jobs?page=1&limit=10&username=user123`, {
   method: 'GET',
   headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' }
 })
-```
-```javascript
-axios.get('/api/jobs', {
+
+axios.get(`${url}/jobs`, {
   headers: { 'x-access-token': '<token>' },
   params: { page: 1, limit: 10, username: 'user123' }
 })
 ```
+
 #### 4\. Obtener Detalles de un Trabajo
 
 -   **Ruta:** `GET /api/jobs/:jobId`
 -   **Params:**
     -   `jobId` (requerido, cadena)
     -   
+
 ```javascript
-fetch('/api/jobs/12345', {
+fetch(`${url}/jobs/12345`, {
   method: 'GET',
   headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' }
 })
+
+axios.get(`${url}/jobs/12345`, { headers: { 'x-access-token': '<token>' } })
 ```
-```javascript
-axios.get('/api/jobs/12345', { headers: { 'x-access-token': '<token>' } })
-```
+
 #### 5\. Obtener Solicitantes de un Trabajo
 
 -   **Ruta:** `GET /api/jobs/:jobId/applicants`
 -   **Params:**
     -   `jobId` (requerido, cadena) 
+    
 ```javascript
-fetch('/api/jobs/12345/applicants', {
+fetch(`${url}/api/jobs/12345/applicants`, {
   method: 'GET',
   headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' }
 })
-```
-```javascript
-axios.get('/api/jobs/12345/applicants', { headers: { 'x-access-token': '<token>' } })
+
+axios.get(`${url}/jobs/12345/applicants`, { headers: { 'x-access-token': '<token>' } })
 ```
 
 #### 6\. Publicar un Trabajo
@@ -241,14 +241,13 @@ axios.get('/api/jobs/12345/applicants', { headers: { 'x-access-token': '<token>'
 ```
  
 ```javascript
-fetch('/api/jobs', {
+fetch(`${url}/api/jobs`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' },
   body: JSON.stringify({ title: "Desarrollador Web", description: "Se busca desarrollador con experiencia en React.", category: "Desarrollo" })
 })
-```
-```javascript
-axios.post('/api/jobs', {
+
+axios.post(`${url}/api/jobs`, {
   title: "Desarrollador Web",
   description: "Se busca desarrollador con experiencia en React.",
   category: "Desarrollo"
@@ -262,13 +261,12 @@ axios.post('/api/jobs', {
     -   `jobId` (requerido, cadena) 
 
 ```javascript
-fetch('/api/jobs/12345', {
+fetch(`${url}/api/jobs/12345`, {
   method: 'DELETE',
   headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' }
 })
-```
-```javascript
-axios.delete('/api/jobs/12345', { headers: { 'x-access-token': '<token>' } )
+
+axios.delete(`${url}/api/jobs/12345`, { headers: { 'x-access-token': '<token>' } })
 ```
 #### 8\. Editar un Trabajo
 
@@ -286,14 +284,13 @@ axios.delete('/api/jobs/12345', { headers: { 'x-access-token': '<token>' } )
 ```
  
 ```javascript
-fetch('/api/jobs/12345', {
+fetch(`${url}/jobs/12345`, {
   method: 'PUT',
   headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' },
   body: JSON.stringify({ title: "Desarrollador Senior", description: "Se busca desarrollador con experiencia en Node.js." })
 })
-```
-```javascript
-axios.put('/api/jobs/12345', {
+
+axios.put(`${url}/jobs/12345`, {
   title: "Desarrollador Senior",
   description: "Se busca desarrollador con experiencia en Node.js."
 }, { headers: { 'x-access-token': '<token>' } })
@@ -313,14 +310,13 @@ axios.put('/api/jobs/12345', {
 ```
  
 ```javascript
-fetch('/api/jobs/12345/start', {
+fetch(`${url}/jobs/12345/start`, {
   method: 'PATCH',
   headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' },
   body: JSON.stringify({ userId: "user123" })
 })
-```
-```javascript
-axios.patch('/api/jobs/12345/start', { userId: "user123" }, { headers: { 'x-access-token': '<token>' } })
+
+axios.patch(`${url}/jobs/12345/start`, { userId: "user123" }, { headers: { 'x-access-token': '<token>' } })
 ```
 
 #### 10\. Finalizar un Trabajo
@@ -330,13 +326,12 @@ axios.patch('/api/jobs/12345/start', { userId: "user123" }, { headers: { 'x-acce
     -   `jobId` (requerido, cadena) 
 
 ```javascript
-fetch('/api/jobs/12345/finish', {
+fetch(`${url}/jobs/12345/finish`, {
   method: 'PATCH',
   headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' }
 })
-```
-```javascript
-axios.patch('/api/jobs/12345/finish', {}, { headers: { 'x-access-token': '<token>' } })
+
+axios.patch(`${url}/jobs/12345/finish`, {}, { headers: { 'x-access-token': '<token>' } })
 ```
 
 #### 11\. Aplicar a un Trabajo
@@ -346,13 +341,12 @@ axios.patch('/api/jobs/12345/finish', {}, { headers: { 'x-access-token': '<token
     -   `jobId` (requerido, cadena) 
 
 ```javascript
-fetch('/api/jobs/12345/apply', {
+fetch(`${url}/jobs/12345/apply`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' }
 })
-```
-```javascript
-axios.post('/api/jobs/12345/apply', {}, { headers: { 'x-access-token': '<token>' } })
+
+axios.post(`${url}/jobs/12345/apply`, {}, { headers: { 'x-access-token': '<token>' } })
 ```
 
 #### 12\. Dejar un Trabajo
@@ -362,13 +356,12 @@ axios.post('/api/jobs/12345/apply', {}, { headers: { 'x-access-token': '<token>'
     -   `jobId` (requerido, cadena) 
 
 ```javascript
-fetch('/api/jobs/12345/apply', {
+fetch(`${url}/jobs/12345/apply`, {
   method: 'DELETE',
   headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' }
 })
-```
-```javascript
-axios.delete('/api/jobs/12345/apply', { headers: { 'x-access-token': '<token>' } })
+
+axios.delete(`${url}/jobs/12345/apply`, { headers: { 'x-access-token': '<token>' } })
 ```
 
 #### 13\. Obtener Categorías
@@ -376,13 +369,12 @@ axios.delete('/api/jobs/12345/apply', { headers: { 'x-access-token': '<token>' }
 -   **Ruta:** `GET /api/jobs/categories` 
 
 ```javascript
-fetch('/api/jobs/categories', {
+fetch(`${url}/jobs/categories`, {
   method: 'GET',
   headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' }
 })
-```
-```javascript
-axios.get('/api/jobs/categories', { headers: { 'x-access-token': '<token>' } })
+
+axios.get(`${url}/jobs/categories`, { headers: { 'x-access-token': '<token>' } })
 ```
 
 #### 14\. Crear Categorías
@@ -397,14 +389,13 @@ axios.get('/api/jobs/categories', { headers: { 'x-access-token': '<token>' } })
 ```
  
 ```javascript
-fetch('/api/jobs/categories', {
+fetch(`${url}/jobs/categories`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json', 'x-access-token': '<token>' },
   body: JSON.stringify({ category: ["Desarrollo", "Diseño"] })
 })
-```
-```javascript
-axios.post('/api/jobs/categories', {
+
+axios.post(`${url}/jobs/categories`, {
   category: ["Desarrollo", "Diseño"]
 }, { headers: { 'x-access-token': '<token>' } })
 ```
@@ -424,7 +415,7 @@ axios.post('/api/jobs/categories', {
 #### 15\. Enviar OTP
 
 ```javascript
-fetch('/api/otp', {
+fetch(`${url}/otp`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -439,10 +430,8 @@ fetch('/api/otp', {
 .then(response => response.json())
 .then(data => console.log(data))
 .catch(error => console.error('Error:', error));
-```
 
-```javascript
-axios.post('/api/otp', {
+axios.post(`${url}/otp`, {
   email: 'usuario@example.com',
   subject: 'Verificación de OTP',
   message: 'Su código OTP es: 123456',
@@ -465,7 +454,7 @@ axios.post('/api/otp', {
 #### 16\. Verificar OTP
 
 ```javascript
-fetch('/api/otp/verify', {
+fetch(`${url}/otp/verify`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -477,10 +466,9 @@ fetch('/api/otp/verify', {
 })
 .then(response => response.json())
 .then(data => console.log(data))
-.catch(error => console.error('Error:', error));`
-```
-```javascript
-axios.post('/api/otp/verify', {
+.catch(error => console.error('Error:', error));
+
+axios.post(`${url}/otp/verify`, {
   email: 'usuario@example.com',
   otp: '123456',
 })
@@ -497,7 +485,7 @@ axios.post('/api/otp/verify', {
 #### 17\. Enviar OTP para verificación de email
 
 ```javascript
-fetch('/api/email_verification', {
+fetch(`${url}/email_verification`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -509,9 +497,8 @@ fetch('/api/email_verification', {
 .then(response => response.json())
 .then(data => console.log(data))
 .catch(error => console.error('Error:', error));
-```
-```javascript
-axios.post('/api/email_verification', {
+
+axios.post(`${url}/email_verification`, {
   email: 'usuario@example.com',
 })
 .then(response => console.log(response.data))
@@ -529,7 +516,7 @@ axios.post('/api/email_verification', {
 #### 18\. Verificar email con OTP
 
 ```javascript
-fetch('/api/email_verification/verify', {
+fetch(`${url}/email_verification/verify`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -542,9 +529,8 @@ fetch('/api/email_verification/verify', {
 .then(response => response.json())
 .then(data => console.log(data))
 .catch(error => console.error('Error:', error));
-```
-```javascript
-axios.post('/api/email_verification/verify', {
+
+axios.post(`${url}/email_verification/verify`, {
   email: 'usuario@example.com',
   otp: '123456',
 })
@@ -563,7 +549,7 @@ axios.post('/api/email_verification/verify', {
 #### 19\. Enviar OTP para restablecer contraseña
 
 ```javascript
-fetch('/api/forgot_password', {
+fetch(`${url}/forgot_password`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -575,9 +561,8 @@ fetch('/api/forgot_password', {
 .then(response => response.json())
 .then(data => console.log(data))
 .catch(error => console.error('Error:', error));
-```
-```javascript
-axios.post('/api/forgot_password', {
+
+axios.post(`${url}/forgot_password`, {
   email: 'usuario@example.com',
 })
 .then(response => console.log(response.data))
@@ -594,7 +579,7 @@ axios.post('/api/forgot_password', {
 #### 20\. Restablecer contraseña
 
 ```javascript
-fetch('/api/forgot_password/reset', {
+fetch(`${url}/forgot_password/reset`, {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -608,9 +593,8 @@ fetch('/api/forgot_password/reset', {
 .then(response => response.json())
 .then(data => console.log(data))
 .catch(error => console.error('Error:', error));
-```
-```javascript
-axios.post('/api/forgot_password/reset', {
+
+axios.post(`${url}/forgot_password/reset`, {
   email: 'usuario@example.com',
   newPassword: 'nuevaContraseña',
   confirmPassword: 'nuevaContraseña',

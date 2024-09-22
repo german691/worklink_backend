@@ -6,7 +6,6 @@ import {
   updateUserInfo,
   deactivateUser,
   reactivateUser,
-  forcePasswordReset,
   getUserActivityLogs,
   generateUserReport,
   exportUserList
@@ -82,7 +81,7 @@ export const handleReactivateUser = async (req, res) => {
   }
 };
 
-export const handleForceUserPasswordReset = async (req, res) => {
+export const handleUserPasswordReset = async (req, res) => {
   try {
     const updatedUser = await forcePasswordReset(req.params.userId, req.body.newPassword);
     if (!updatedUser) return res.status(404).send("User not found");
