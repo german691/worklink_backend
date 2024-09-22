@@ -73,7 +73,7 @@ Este proyecto requiere ciertas variables de entorno. Crea un archivo `.env` en l
 1.  **Registro de Usuario**
     -   Método: `POST /signup`
 2.  **Inicio de Sesión**
-    -   Método: `POST /login`
+    -   Método: `POST /`
 
 #### Rutas de Jobs
 
