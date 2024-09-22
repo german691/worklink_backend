@@ -140,12 +140,6 @@ const leaveJob = async (data) => {
   return await fetchedJob.save();
 };
 
-const createNewCategory = async (data) => {
-  const { category } = data;
-  const newCategory = new JobCategory({ category });
-  return await newCategory.save();
-};
-
 const getCategories = async () => {
   return await JobCategory.find();
 };
@@ -160,6 +154,5 @@ export {
   markJobAsCompleted,
   applyToJob,
   leaveJob,
-  createNewCategory,
   getCategories
 };

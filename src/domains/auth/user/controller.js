@@ -41,7 +41,7 @@ const authenticateUser = async (value) => {
     throw new Error("Email hasn't been verified yet. Check your inbox.");
   }
 
-  if (!fetchedUser.active) {
+  if (!fetchedUser.isActive) {
     throw new Error("The user is deactivated. Contact administrator");
   }
 

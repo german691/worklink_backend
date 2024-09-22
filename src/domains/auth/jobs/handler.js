@@ -19,7 +19,6 @@ import {
   dropJob,
   editJob,
   getCategories,
-  createNewCategory,
   applyToJob,
   leaveJob,
   setFinalWorker,
@@ -172,18 +171,6 @@ export const handleMarkJobAsCompleted = async (req, res) => {
 
     const completedJob = await markJobAsCompleted({ jobId, currentUserId: req.currentUser.userId });
     res.status(200).json(completedJob);
-  } catch (error) {
-    res.status(400).send(error.message);
-  }
-};
-
-export const handleCreateCategory = async (req, res) => {
-  try {
-    await categorySetterSchema.validateAsync(req.body);
-    const { category } = req.body;
-
-    const createdCategory = await createNewCategory({ category });
-    res.status(201).json(createdCategory);
   } catch (error) {
     res.status(400).send(error.message);
   }
