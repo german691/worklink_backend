@@ -12,28 +12,26 @@ import {
   handleSetFinalWorker,
   handleApplyToJob,
   handleLeaveJob,
-  handleCreateCategory,
   handleGetCategories
 } from "./handler.js"; 
 
 // Public
 router.get("/", handleGetJob); 
-router.get("/:jobId", auth(["client", "worker", "admin"]), handleGetJobDetails); 
-router.get("/:jobId/applicants", auth(["client", "worker", "admin"]), handleGetJobApplicants); 
+router.get("/:jobId", auth(), handleGetJobDetails); 
+router.get("/:jobId/applicants", auth(), handleGetJobApplicants); 
 
 // Client-admin
-router.post("/", auth(["client", "admin"]), handlePostJob); 
-router.delete("/:jobId", auth(["client", "admin"]), handleDropJob); 
-router.put("/:jobId", auth(["client", "admin"]), handleEditJob); 
-router.patch("/:jobId/start", auth(["client", "admin"]), handleSetFinalWorker); 
-router.patch("/:jobId/finish", auth(["client", "admin"]), handleMarkJobAsCompleted); 
+router.post("/", auth(["client"]), handlePostJob); 
+router.delete("/:jobId", auth(["client"]), handleDropJob); 
+router.put("/:jobId", auth(["client"]), handleEditJob); 
+router.patch("/:jobId/start", auth(["client"]), handleSetFinalWorker); 
+router.patch("/:jobId/finish", auth(["client"]), handleMarkJobAsCompleted); 
 
 // Worker-admin
-router.post("/:jobId/apply", auth(["worker", "admin"]), handleApplyToJob); 
-router.delete("/:jobId/apply", auth(["worker", "admin"]), handleLeaveJob); 
+router.post("/:jobId/apply", auth(["worker"]), handleApplyToJob); 
+router.delete("/:jobId/apply", auth(["worker"]), handleLeaveJob); 
 
 // Categories
 router.get("/categories", auth(["admin"]), handleGetCategories); 
-router.post("/categories", auth(["admin"]), handleCreateCategory); 
 
-export default router;
+export default router

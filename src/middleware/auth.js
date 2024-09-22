@@ -4,7 +4,7 @@ const { TOKEN_KEY } = process.env;
 
 const auth = (permissions) => {
     return (req, res, next) => {
-        const token = req.body.token || req.query.token || req.headers["x-access-token"];
+        const token = req.body.token || req.query.token || req.headers["x-access-token"] || req.headers["x-admin-token"];
 
         if (!token) {
             return res.status(403).send("An authentication token is required");
@@ -19,7 +19,6 @@ const auth = (permissions) => {
             }
 
             return next();
-
         } catch (error) {
             return res.status(401).send("Invalid token provided");
         }  

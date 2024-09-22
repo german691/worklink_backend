@@ -8,7 +8,7 @@ const jobSchema = new Schema({
   publisher: { type: String, required: true },
   title: { type: String, required: true },
   description: { type: String, required: true },
-  category: { type: String, required: true },
+  category: { type: mongoose.Schema.Types.ObjectId, ref: 'JobCategory' },
   createdAt: { type: Date, default: Date.now },
   expiresAt: { type: Date, default: () => new Date(Date.now() + 2592000000) }, 
   applicantsId: [{ type: Schema.Types.ObjectId, ref: 'User' }],

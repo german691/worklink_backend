@@ -22,5 +22,8 @@ app.use("/api", routes);
 import { initAdmin } from "./util/initAdmin.js";
 initAdmin();
 
+import { initSuperadmin } from "./util/initSuperadmin.js";
+initSuperadmin();
+
 export default app;
 

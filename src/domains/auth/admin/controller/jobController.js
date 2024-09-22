@@ -1,4 +1,4 @@
-import { Job } from "../../jobs/model.js";
+import { Job, JobCategory } from "../../jobs/model.js";
 
 export const getAllJobs = async () => Job.find().populate("userId", "username");
 
@@ -23,9 +23,34 @@ export const filterJobs = async (filter) => {
 
 export const getJobCategories = async () => JobCategory.find();
 
-export const createJobCategory = async (categoryData) => {
-  const newCategory = new JobCategory(categoryData);
-  return newCategory.save();
+export const createJobCategory = async (data) => {
+  const { category } = data;
+
+  if (Array.isArray(category)) {
+    const existingCategories = await JobCategory.find({ category: { $in: category } });
+    const existingCategoryNames = existingCategories.map(c => c.category);
+
+    const categoriesToCreate = category
+      .filter(c => c && !existingCategoryNames.includes(c))
+      .map(c => new JobCategory({ category: c }));
+
+    if (categoriesToCreate.length > 0) {
+      const savedCategories = await JobCategory.insertMany(categoriesToCreate);
+      return savedCategories;
+    } else {
+      return [];
+    }
+
+  } else {
+    const existingCategory = await JobCategory.findOne({ category });
+
+    if (!existingCategory) {
+      const newCategory = new JobCategory({ category });
+      return await newCategory.save();
+    } else {
+      return existingCategory;
+    }
+  }
 };
 
 export const deleteJobCategory = async (categoryId) => JobCategory.findByIdAndDelete(categoryId);
