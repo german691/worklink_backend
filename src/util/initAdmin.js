@@ -1,4 +1,4 @@
-import Admin from "../domains/auth/admin/model.js";
+import { Admin } from "../domains/auth/admin/model.js";
 import { hashData } from "./hashData.js";
 
 export const initAdmin = async () => {

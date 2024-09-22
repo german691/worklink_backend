@@ -3,234 +3,151 @@ import User from './../user/model.js';
 import { _encrypt, _decrypt } from "./../../../util/cryptData.js";
 import mongoose from 'mongoose';
 
-// client --------------------------------------------------------------
 const sendNewJob = async (data) => {
-  try {
-    const { publisher, userId, title, description, category } = data;
+  const { publisher, userId, title, description, category } = data;
+  const fetchedCategory = await JobCategory.findOne({ category });
+  if (!fetchedCategory) throw Error(`${category} not in category list`);
 
-    const fetchedCategory = await JobCategory.findOne({ category });
-    if (!fetchedCategory) throw Error(`${category} no está en la lista de categorías`);
+  const fetchedUser = await User.findById(userId);
+  if (!fetchedUser) throw Error("Invalid user");
 
-    const fetchedUser = await User.findById(userId);
-    if (!fetchedUser) throw Error("El usuario no es válido");
+  const newJob = new Job({
+    userId, title, description, publisher, category,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + 2592000000,
+  });
 
-    const newJob = new Job({
-      userId, title, description, publisher, category,
-      createdAt: Date.now(),
-      expiresAt: Date.now() + 2592000000,
-    });
-
-    const createdJob = await newJob.save();
-    return createdJob;
-  } catch (error) {
-    throw error;
-  }
+  return await newJob.save();
 };
 
 const getJobs = async (data) => {
-  try {
-    const { offset = 0, limit = 10, username } = data;
+  const { offset = 0, limit = 10, username } = data;
+  let user = null;
+  if (username) {
+    user = await User.findOne({ username });
+    if (!user) throw new Error("User not found");
+  }
 
-    let user = null;
-    if (username) {
-      user = await User.findOne({ username });
-      if (!user) throw new Error("Usuario no encontrado");
-    }
+  const query = user ? { userId: user._id } : {};
+  const totalJobs = await Job.countDocuments(query);
+  const jobs = await Job.find(query).skip(offset).limit(limit);
 
-    const query = user ? { userId: user._id } : {};
-    const totalJobs = await Job.countDocuments(query);
-    const jobs = await Job.find(query).skip(offset).limit(limit);
+  if (!jobs.length) throw new Error("No jobs found");
 
-    if (!jobs.length) throw new Error("No se encontraron trabajos");
-
-    const encryptedJobs = jobs.map(job => ({
+  return {
+    jobs: jobs.map(job => ({
       id: _encrypt(job._id.toString()),
       title: job.title,
       description: job.description,
       publisher: job.publisher
-    }));
-
-    return { jobs: encryptedJobs, totalJobs };
-  } catch (error) {
-    throw error;
-  }
+    })),
+    totalJobs
+  };
 };
 
-const getJobDetails = async (jobId) => {  
-  if (!jobId) {
-    return null;
-  }
-
-  const decryptedJobId = _decrypt(jobId);
-  const job = await Job.findById(decryptedJobId);
-
-  return job;
+const getJobDetails = async (data) => {
+  if (!data) return null;
+  const decryptedJobId = _decrypt(data);
+  return await Job.findById(decryptedJobId);
 };
 
 const dropJob = async (data) => {
-  try {
-    const { userId, jobId } = data;
+  const { userId, jobId } = data;
+  if (!(userId && jobId)) throw Error("userId and jobId required");
 
-    if (!(userId && jobId)) throw Error("Se requiere userId y jobId");
+  const decryptedJobId = _decrypt(jobId);
+  const fetchedJob = await Job.findById(decryptedJobId);
+  if (!fetchedJob) throw Error("Job not found");
 
-    const decryptedJobId = _decrypt(jobId);
-    const fetchedJob = await Job.findById(decryptedJobId);
-    if (!fetchedJob) throw Error("Trabajo no encontrado");
+  if (fetchedJob.finished) throw Error("Cannot delete finished job");
+  if (fetchedJob.finalApplicant) throw Error("Cannot delete job with final worker");
+  if (!fetchedJob.userId.equals(userId)) throw Error("Unauthorized access");
 
-    if (fetchedJob.finished) throw Error("No se puede eliminar un trabajo ya finalizado");
-
-    if (fetchedJob.finalApplicant) throw Error("No se puede eliminar un trabajo con un trabajador definitivo");
-
-    if (!fetchedJob.userId.equals(userId)) throw Error("Acceso no autorizado");
-
-    const droppedJob = await Job.findByIdAndUpdate(decryptedJobId, {
-      $set: { unlisted: true, unlistedAt: new Date() }
-    }, { new: true });
-
-    return droppedJob;
-  } catch (error) {
-    throw error;
-  }
+  return await Job.findByIdAndUpdate(decryptedJobId, {
+    $set: { unlisted: true, unlistedAt: new Date() }
+  }, { new: true });
 };
 
 const editJob = async (data) => {
-  try {
-    const { userId, jobId, title, description } = data;
+  const { userId, jobId, title, description } = data;
+  if (!(userId && jobId)) throw Error("userId and jobId required");
 
-    if (!(userId && jobId)) throw Error("Se requiere userId y jobId");
+  const decryptedJobId = _decrypt(jobId);
+  const fetchedJob = await Job.findById(decryptedJobId);
+  if (!fetchedJob) throw Error("Job not found");
+  if (!fetchedJob.userId.equals(userId)) throw Error("Unauthorized access");
+  if (fetchedJob.finished) throw Error("Cannot edit finished job");
 
-    const decryptedJobId = _decrypt(jobId);
-    const fetchedJob = await Job.findById(decryptedJobId);
-    if (!fetchedJob) throw Error("Trabajo no encontrado");
-
-    if (!fetchedJob.userId.equals(userId)) throw Error("Acceso no autorizado");
-
-    if (fetchedJob.finished) throw Error("No se puede editar un trabajo ya finalizado");
-
-    const updatedJob = await Job.findByIdAndUpdate(decryptedJobId, {
-      $set: { title, description }
-    }, { new: true });
-
-    return updatedJob;
-  } catch (error) {
-    throw error;
-  }
+  return await Job.findByIdAndUpdate(decryptedJobId, {
+    $set: { title, description }
+  }, { new: true });
 };
 
 const setFinalWorker = async (data) => {
-  try {
-    const { userId, jobId, currentUserId } = data;
+  const { userId, jobId, currentUserId } = data;
+  const decryptedUserId = _decrypt(userId);
+  const fetchedWorker = await User.findById(decryptedUserId);
+  if (!fetchedWorker) throw Error("User not found");
+  if (fetchedWorker.userType !== "worker") throw Error("User must be a worker");
 
-    const decryptedUserId = _decrypt(userId);
-    const fetchedWorker = await User.findById(decryptedUserId);
-    if (!fetchedWorker) throw Error("Usuario no encontrado");
+  const decryptedJobId = _decrypt(jobId);
+  const fetchedJob = await Job.findById(decryptedJobId);
+  if (!fetchedJob) throw Error("Job not found");
+  if (!fetchedJob.userId.equals(currentUserId)) throw Error("Unauthorized access");
 
-    console.log(fetchedWorker);
-    if (fetchedWorker.userType !== "worker") throw Error("El usuario debe ser trabajador");
+  const isApplicant = await Job.findOne({
+    _id: decryptedJobId,
+    applicantsId: new mongoose.Types.ObjectId(decryptedUserId)
+  });
+  if (!isApplicant) throw Error("Worker has not applied to job");
 
-    const decryptedJobId = _decrypt(jobId);
-    const fetchedJob = await Job.findById(decryptedJobId);
-    if (!fetchedJob) throw Error("Trabajo no encontrado");
-
-    if (!fetchedJob.userId.equals(currentUserId)) throw Error("Acceso no autorizado");
-
-    const isApplicant = await Job.findOne({
-      _id: decryptedJobId,
-      applicantsId: new mongoose.Types.ObjectId(decryptedUserId)
-    });
-    if (!isApplicant) throw Error("El trabajador no ha aplicado al trabajo");
-
-    const finalWorker = await Job.findByIdAndUpdate(decryptedJobId, {
-      $set: { finalApplicant: new mongoose.Types.ObjectId(decryptedUserId), applicantsId: [] }
-    }, { new: true });
-
-    return finalWorker;
-  } catch (error) {
-    throw error;
-  }
+  return await Job.findByIdAndUpdate(decryptedJobId, {
+    $set: { finalApplicant: new mongoose.Types.ObjectId(decryptedUserId), applicantsId: [] }
+  }, { new: true });
 };
-
 
 const markJobAsCompleted = async (data) => {
-  try {
-    const { jobId, currentUserId } = data;
+  const { jobId, currentUserId } = data;
+  const decryptedJobId = _decrypt(jobId);
+  const fetchedJob = await Job.findById(decryptedJobId);
+  if (!fetchedJob) throw Error("Job not found");
+  if (!fetchedJob.finalApplicant) throw Error("Job does not have a final worker");
+  if (!fetchedJob.userId.equals(currentUserId)) throw Error("Unauthorized access");
 
-    const decryptedJobId = _decrypt(jobId);
-    const fetchedJob = await Job.findById(decryptedJobId);
-    if (!fetchedJob) throw Error("Trabajo no encontrado");
-
-    if (!fetchedJob.finalApplicant) throw Error("El trabajo no tiene un trabajador final");
-
-    if (!fetchedJob.userId.equals(currentUserId)) throw Error("Acceso no autorizado");
-
-    const completedJob = await Job.findByIdAndUpdate(decryptedJobId, {
-      $set: { finished: true }
-    }, { new: true });
-
-    return completedJob;
-  } catch (error) {
-    throw error;
-  }
+  return await Job.findByIdAndUpdate(decryptedJobId, {
+    $set: { finished: true }
+  }, { new: true });
 };
 
-// worker --------------------------------------------------------------
 const applyToJob = async (data) => {
-  try {
-    const { userId, jobId } = data;
+  const { userId, jobId } = data;
+  const decryptedJobId = _decrypt(jobId);
+  const fetchedJob = await Job.findById(decryptedJobId);
+  if (fetchedJob.finalApplicant) throw Error("Cannot apply to started job");
+  if (fetchedJob.applicantsId.includes(userId)) throw Error("Already in applicants list");
 
-    const decryptedJobId = _decrypt(jobId);
-    const fetchedJob = await Job.findById(decryptedJobId);
-    if (fetchedJob.finalApplicant) throw Error("No se puede aplicar a un trabajo ya iniciado");
-
-    if (fetchedJob.applicantsId.includes(userId)) throw Error("Ya está en la lista de solicitantes");
-
-    fetchedJob.applicantsId.push(userId);
-    const updatedJob = await fetchedJob.save();
-
-    return updatedJob;
-  } catch (error) {
-    throw error;
-  }
+  fetchedJob.applicantsId.push(userId);
+  return await fetchedJob.save();
 };
 
 const leaveJob = async (data) => {
-  try {
-    const { userId, jobId } = data;
+  const { userId, jobId } = data;
+  const decryptedJobId = _decrypt(jobId);
+  const fetchedJob = await Job.findById(decryptedJobId);
+  if (fetchedJob.finalApplicant === userId) throw Error("Cannot leave job where already accepted");
 
-    const decryptedJobId = _decrypt(jobId);
-    const fetchedJob = await Job.findById(decryptedJobId);
-    if (fetchedJob.finalApplicant === userId) throw Error("No se puede abandonar un trabajo en el que ya fue aceptado");
-
-    fetchedJob.applicantsId = fetchedJob.applicantsId.filter(id => id.toString() !== userId);
-    const updatedJob = await fetchedJob.save();
-
-    return updatedJob;
-  } catch (error) {
-    throw error;
-  }
+  fetchedJob.applicantsId = fetchedJob.applicantsId.filter(id => id.toString() !== userId);
+  return await fetchedJob.save();
 };
 
-// admin --------------------------------------------------------------
 const createNewCategory = async (data) => {
-  try {
-    const { category } = data;
-
-    const newCategory = new JobCategory({ category });
-    const createdCategory = await newCategory.save();
-
-    return createdCategory;
-  } catch (error) {
-    throw error;
-  }
+  const { category } = data;
+  const newCategory = new JobCategory({ category });
+  return await newCategory.save();
 };
 
 const getCategories = async () => {
-  try {
-    const categories = await JobCategory.find();
-    return categories;
-  } catch (error) {
-    throw error;
-  }
+  return await JobCategory.find();
 };
 
 export {

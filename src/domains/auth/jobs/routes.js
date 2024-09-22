@@ -1,34 +1,39 @@
 import express from 'express';
 const router = express.Router();
 import auth from "./../../../middleware/auth.js";
-import { handlePostJob, handleGetJob, handleGetJobDetails, handleGetJobApplicants, handleEditJob, handleDropJob, handleFinishJob, handleStartJob, handleApplyToWork, handleLeavingJob, handleCategorySetter, handleCategoryGetter } from "./handler.js"; 
+import {
+  handlePostJob,
+  handleGetJob,
+  handleGetJobDetails,
+  handleGetJobApplicants,
+  handleEditJob,
+  handleDropJob,
+  handleMarkJobAsCompleted,
+  handleSetFinalWorker,
+  handleApplyToJob,
+  handleLeaveJob,
+  handleCreateCategory,
+  handleGetCategories
+} from "./handler.js"; 
 
-// public
-router.get("/", handleGetJob); //ok
+// Public
+router.get("/", handleGetJob); 
+router.get("/:jobId", auth(["client", "worker", "admin"]), handleGetJobDetails); 
+router.get("/:jobId/applicants", auth(["client", "worker", "admin"]), handleGetJobApplicants); 
 
-router.get("/:jobId", auth(["client", "worker", "admin"]), handleGetJobDetails); //ok
-router.get("/:jobId/applicants", auth(["client", "worker", "admin"]), handleGetJobApplicants); //ok
+// Client-admin
+router.post("/", auth(["client", "admin"]), handlePostJob); 
+router.delete("/:jobId", auth(["client", "admin"]), handleDropJob); 
+router.put("/:jobId", auth(["client", "admin"]), handleEditJob); 
+router.patch("/:jobId/start", auth(["client", "admin"]), handleSetFinalWorker); 
+router.patch("/:jobId/finish", auth(["client", "admin"]), handleMarkJobAsCompleted); 
 
-// client-admin
-router.post("/", auth(["client", "admin"]), handlePostJob); //ok
+// Worker-admin
+router.post("/:jobId/apply", auth(["worker", "admin"]), handleApplyToJob); 
+router.delete("/:jobId/apply", auth(["worker", "admin"]), handleLeaveJob); 
 
-router.delete("/:jobId", auth(["client", "admin"]), handleDropJob); //ok
-
-router.put("/:jobId", auth(["client", "admin"]), handleEditJob); //ok
-
-router.patch("/:jobId/start", auth(["client", "admin"]), handleStartJob); //ok
-
-router.patch("/:jobId/finish", auth(["client", "admin"]), handleFinishJob); //ok
-
-// worker-admin
-router.post("/:jobId/apply", auth(["worker", "admin"]), handleApplyToWork); //ok
-
-router.delete("/:jobId/apply", auth(["worker", "admin"]), handleLeavingJob); //ok
-
-// categories
-router.get("/categories", auth(["admin"]), handleCategoryGetter); //ok
-
-router.post("/categories", auth(["admin"]), handleCategorySetter); //ok
+// Categories
+router.get("/categories", auth(["admin"]), handleGetCategories); 
+router.post("/categories", auth(["admin"]), handleCreateCategory); 
 
 export default router;
-
