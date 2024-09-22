@@ -139,7 +139,7 @@ Este proyecto requiere ciertas variables de entorno. Crea un archivo `.env` en l
 
 #### 2\. Inicio de Sesión
 
--   **Ruta:** `POST /login`
+-   **Ruta:** `POST /`
 -   **Cuerpo (JSON):**
 
 
@@ -149,14 +149,14 @@ Este proyecto requiere ciertas variables de entorno. Crea un archivo `.env` en l
 }`
  
 
-`fetch('/login', {
+`fetch('/', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ username: "user123", password: "securePassword" })
 })`
  
 
-`axios.post('/login', {
+`axios.post('/', {
   username: "user123",
   password: "securePassword"
 })`
