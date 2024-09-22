@@ -1,22 +1,26 @@
-//mongodb connection
-require("dotenv").config();
+import connectToDB from "./config/db.js";
+connectToDB();
 
-require("./config/db");
-
-const express = require("express");
+import express from "express";
 
 const bodyParser = express.json;
 
-const cors = require("cors");
+import cors from 'cors';
 
-const routes = require("./routes");
+import routes from './routes/index.js';
 
 const app = express();
 
 app.use(cors());
 app.use(bodyParser());
 
-app.use("/api/v1", routes);
+// import activityLogger from "./middleware/logs/activityLogger.js";
+// app.use(activityLogger);
 
-module.exports = app;
+app.use("/api", routes);
+
+import { initAdmin } from "./util/initAdmin.js";
+initAdmin();
+
+export default app;
 

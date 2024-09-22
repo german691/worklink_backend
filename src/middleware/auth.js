@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken");
+import jsonwebtoken from "jsonwebtoken"
 
 const { TOKEN_KEY } = process.env;
 
@@ -11,7 +11,7 @@ const auth = (permissions) => {
         }
             
         try {
-            const decodedToken = jwt.verify(token, TOKEN_KEY);
+            const decodedToken = jsonwebtoken.verify(token, TOKEN_KEY);
             req.currentUser = decodedToken;
 
             if (permissions && !permissions.includes(req.currentUser.userType)) {
@@ -26,4 +26,4 @@ const auth = (permissions) => {
     };
 };
 
-module.exports = auth;
+export default auth;
