@@ -1,4 +1,4 @@
-const checkStatus = () => {
+const checkStatus = (req, res) => {
   try {
     res.status(200).send("Worklink API is up and running");
   } catch (error) {
