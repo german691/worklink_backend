@@ -29,11 +29,6 @@ import {
 export const handleGetJob = async (req, res) => {
   try {
     await getJobSchema.validateAsync(req.query);
-<<<<<<< Updated upstream
-    const { page = 1, limit = 10, username } = req.query;
-    const jobs = await getJobs({ page, limit, username });
-=======
-    
     const { offset = 0, limit = 10, username } = req.query;
     const jobs = await getJobs({
       offset: parseInt(offset, 10), 
@@ -41,7 +36,6 @@ export const handleGetJob = async (req, res) => {
       username
     });
 
->>>>>>> Stashed changes
     res.status(200).json(jobs);
     
   } catch (error) {
