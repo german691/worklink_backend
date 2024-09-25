@@ -14,7 +14,7 @@ const handleSignup = async (req, res) => {
 
     return res.status(200).json(newUser);
   } catch (error) {
-    return res.status(400).send(error.message);
+    return res.status(400).json({ message: error.message }); 
   }
 };
 
@@ -26,7 +26,7 @@ const handleLogin = async (req, res) => {
     }
     
     const token = await authenticateUser(value);
-    return res.status(200).json({ token });
+    return res.status(200).json({ token: token });
   } catch (error) {
     return res.status(400).json({ error: error.message });
   }
