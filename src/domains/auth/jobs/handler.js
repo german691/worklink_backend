@@ -28,8 +28,8 @@ import {
 export const handleGetJob = async (req, res) => {
   try {
     await getJobSchema.validateAsync(req.query);
-    const { page = 1, limit = 10, username } = req.query;
-    const jobs = await getJobs({ page, limit, username });
+    const { offset = 0, limit = 10, username } = req.query;
+    const jobs = await getJobs({ offset, limit, username });
     res.status(200).json(jobs);
   } catch (error) {
     res.status(400).send(error.message);
