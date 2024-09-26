@@ -2,14 +2,25 @@ import { Job, JobCategory } from './model.js';
 import User from './../user/model.js';
 import { _encrypt, _decrypt } from "./../../../util/cryptData.js";
 import mongoose from 'mongoose';
+import { handleError } from '../../../util/errorHandler.js';
+
+const verifyExists = async (model, query, notFoundMessage) => {
+  const result = await model.findOne(query);
+  if (!result) handleError(notFoundMessage, 404);
+  return result;
+};
+
+const verifyUserExists = async (userId) => verifyExists(User, { _id: userId }, "Invalid user");
+const verifyJobExists = async (jobId) => verifyExists(Job, { _id: jobId }, "Job not found");
+const verifyCategoryExists = async (category) => verifyExists(JobCategory, { category }, `${category} not in category list`);
 
 const sendNewJob = async (data) => {
   const { publisher, userId, title, description, category } = data;
-  const fetchedCategory = await JobCategory.findOne({ category });
-  if (!fetchedCategory) throw Error(`${category} not in category list`);
-
-  const fetchedUser = await User.findById(userId);
-  if (!fetchedUser) throw Error("Invalid user");
+  
+  await Promise.all([
+    verifyCategoryExists(category),
+    verifyUserExists(userId)
+  ]);
 
   const newJob = new Job({
     userId, title, description, publisher, category,
@@ -20,19 +31,14 @@ const sendNewJob = async (data) => {
   return await newJob.save();
 };
 
-const getJobs = async (data) => {
-  const { offset = 0, limit = 10, username } = data;
-  let user = null;
-  if (username) {
-    user = await User.findOne({ username });
-    if (!user) throw new Error("User not found");
-  }
-
+const getJobs = async ({ offset = 0, limit = 10, username }) => {
+  const user = username ? await verifyUserExists(username) : null;
+  
   const query = user ? { userId: user._id } : {};
   const totalJobs = await Job.countDocuments(query);
   const jobs = await Job.find(query).skip(offset).limit(limit);
 
-  if (!jobs.length) throw new Error("No jobs found");
+  if (!jobs.length) handleError("No jobs found", 404);
 
   return {
     jobs: jobs.map(job => ({
@@ -46,22 +52,22 @@ const getJobs = async (data) => {
 };
 
 const getJobDetails = async (data) => {
-  if (!data) return null;
   const decryptedJobId = _decrypt(data);
-  return await Job.findById(decryptedJobId);
+  return await verifyJobExists(decryptedJobId);
 };
 
 const dropJob = async (data) => {
   const { userId, jobId } = data;
-  if (!(userId && jobId)) throw Error("userId and jobId required");
+
+  if (!userId) handleError(`userId must be provided`, 400);
+  if (!jobId) handleError("jobId parameter required", 404);
 
   const decryptedJobId = _decrypt(jobId);
-  const fetchedJob = await Job.findById(decryptedJobId);
-  if (!fetchedJob) throw Error("Job not found");
+  const fetchedJob = await verifyJobExists(decryptedJobId);
 
-  if (fetchedJob.finished) throw Error("Cannot delete finished job");
-  if (fetchedJob.finalApplicant) throw Error("Cannot delete job with final worker");
-  if (!fetchedJob.userId.equals(userId)) throw Error("Unauthorized access");
+  if (fetchedJob.finished) handleError("Cannot delete finished job", 400);
+  if (fetchedJob.finalApplicant) handleError("Cannot delete job with final worker", 400);
+  if (!fetchedJob.userId.equals(userId)) handleError("Unauthorized access", 403);
 
   return await Job.findByIdAndUpdate(decryptedJobId, {
     $set: { unlisted: true, unlistedAt: new Date() }
@@ -70,36 +76,33 @@ const dropJob = async (data) => {
 
 const editJob = async (data) => {
   const { userId, jobId, title, description } = data;
-  if (!(userId && jobId)) throw Error("userId and jobId required");
+  if (!(userId && jobId)) handleError("userId and jobId required", 400);
 
   const decryptedJobId = _decrypt(jobId);
-  const fetchedJob = await Job.findById(decryptedJobId);
-  if (!fetchedJob) throw Error("Job not found");
-  if (!fetchedJob.userId.equals(userId)) throw Error("Unauthorized access");
-  if (fetchedJob.finished) throw Error("Cannot edit finished job");
+  const fetchedJob = await verifyJobExists(decryptedJobId);
 
-  return await Job.findByIdAndUpdate(decryptedJobId, {
-    $set: { title, description }
-  }, { new: true });
+  if (!fetchedJob.userId.equals(userId)) handleError("Unauthorized access", 403);
+  if (fetchedJob.finished) handleError("Cannot edit finished job", 400);
+
+  return await Job.findByIdAndUpdate(decryptedJobId, { $set: { title, description } }, { new: true });
 };
 
 const setFinalWorker = async (data) => {
   const { userId, jobId, currentUserId } = data;
   const decryptedUserId = _decrypt(userId);
-  const fetchedWorker = await User.findById(decryptedUserId);
-  if (!fetchedWorker) throw Error("User not found");
-  if (fetchedWorker.userType !== "worker") throw Error("User must be a worker");
+  
+  const fetchedWorker = await verifyUserExists(decryptedUserId);
+  if (fetchedWorker.userType !== "worker") handleError("User must be a worker", 400);
 
   const decryptedJobId = _decrypt(jobId);
-  const fetchedJob = await Job.findById(decryptedJobId);
-  if (!fetchedJob) throw Error("Job not found");
-  if (!fetchedJob.userId.equals(currentUserId)) throw Error("Unauthorized access");
+  const fetchedJob = await verifyJobExists(decryptedJobId);
+  if (!fetchedJob.userId.equals(currentUserId)) handleError("Unauthorized access", 403);
 
   const isApplicant = await Job.findOne({
     _id: decryptedJobId,
     applicantsId: new mongoose.Types.ObjectId(decryptedUserId)
   });
-  if (!isApplicant) throw Error("Worker has not applied to job");
+  if (!isApplicant) handleError("Worker has not applied to job", 400);
 
   return await Job.findByIdAndUpdate(decryptedJobId, {
     $set: { finalApplicant: new mongoose.Types.ObjectId(decryptedUserId), applicantsId: [] }
@@ -109,22 +112,21 @@ const setFinalWorker = async (data) => {
 const markJobAsCompleted = async (data) => {
   const { jobId, currentUserId } = data;
   const decryptedJobId = _decrypt(jobId);
-  const fetchedJob = await Job.findById(decryptedJobId);
-  if (!fetchedJob) throw Error("Job not found");
-  if (!fetchedJob.finalApplicant) throw Error("Job does not have a final worker");
-  if (!fetchedJob.userId.equals(currentUserId)) throw Error("Unauthorized access");
+  const fetchedJob = await verifyJobExists(decryptedJobId);
 
-  return await Job.findByIdAndUpdate(decryptedJobId, {
-    $set: { finished: true }
-  }, { new: true });
+  if (!fetchedJob.finalApplicant) handleError("Job does not have a final worker", 400);
+  if (!fetchedJob.userId.equals(currentUserId)) handleError("Unauthorized access", 403);
+
+  return await Job.findByIdAndUpdate(decryptedJobId, { $set: { finished: true } }, { new: true });
 };
 
 const applyToJob = async (data) => {
   const { userId, jobId } = data;
   const decryptedJobId = _decrypt(jobId);
-  const fetchedJob = await Job.findById(decryptedJobId);
-  if (fetchedJob.finalApplicant) throw Error("Cannot apply to started job");
-  if (fetchedJob.applicantsId.includes(userId)) throw Error("Already in applicants list");
+  const fetchedJob = await verifyJobExists(decryptedJobId);
+
+  if (fetchedJob.finalApplicant) handleError("Cannot apply to started job", 400);
+  if (fetchedJob.applicantsId.includes(userId)) handleError("Already in applicants list", 400);
 
   fetchedJob.applicantsId.push(userId);
   return await fetchedJob.save();
@@ -133,11 +135,20 @@ const applyToJob = async (data) => {
 const leaveJob = async (data) => {
   const { userId, jobId } = data;
   const decryptedJobId = _decrypt(jobId);
-  const fetchedJob = await Job.findById(decryptedJobId);
-  if (fetchedJob.finalApplicant === userId) throw Error("Cannot leave job where already accepted");
+  const fetchedJob = await verifyJobExists(decryptedJobId);
+
+  if (fetchedJob.finalApplicant === userId) handleError("Cannot leave job where already accepted", 400);
 
   fetchedJob.applicantsId = fetchedJob.applicantsId.filter(id => id.toString() !== userId);
   return await fetchedJob.save();
+};
+
+const createNewCategory = async (data) => {
+  const { category } = data;
+  if (!category) handleError("Category name is required", 400);
+
+  const newCategory = new JobCategory({ category });
+  return await newCategory.save();
 };
 
 const getCategories = async () => {

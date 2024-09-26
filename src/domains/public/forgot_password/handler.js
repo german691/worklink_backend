@@ -1,5 +1,6 @@
 import { sendPasswordResetOTPEmail, resetUserPassword } from "./controller.js";
 import resetPwdSchema from "./../../../validation/publicSchemes.js";
+import { handleErrorResponse } from "../../../util/errorHandler.js";
 
 const pwdOTPHandler = async (req, res) => {
   try {
@@ -11,7 +12,7 @@ const pwdOTPHandler = async (req, res) => {
     const createdPasswordResetOTP = await sendPasswordResetOTPEmail(email);
     return res.status(200).json(createdPasswordResetOTP);
   } catch (error) {
-    return res.status(400).send(error.message);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -25,7 +26,7 @@ const pwdResetHandler = async (req, res) => {
     await resetUserPassword(value);
     return res.status(200).json({ email: value.email, reset: true });
   } catch (error) {
-    return res.status(400).send(error.message);
+    return handleErrorResponse(res, error);
   }
 };
 

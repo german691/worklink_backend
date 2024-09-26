@@ -1,27 +1,55 @@
 import { Job, JobCategory } from "../../jobs/model.js";
+import { handleError } from "../../../../util/errorHandler.js";
 
-export const getAllJobs = async () => Job.find().populate("userId", "username");
+const verifyJobExists = async (jobId) => {
+  const job = await Job.findById(jobId);
+  if (!job) handleError("Job not found", 404);
+  return job;
+};
 
-export const getJobById = async (jobId) => Job.findById(jobId).populate("userId", "username");
+export const getAllJobs = async () => {
+  const jobs = await Job.find().populate("userId", "username");
+  if (!jobs.length) handleError("No jobs found", 404);
+  return jobs;
+};
+
+export const getJobById = async (jobId) => {
+  const job = await verifyJobExists(jobId);
+  return job.populate("userId", "username");
+};
 
 export const createJob = async (jobData) => {
   const newJob = new Job(jobData);
   return newJob.save();
 };
 
-export const updateJob = async (jobId, jobData) => Job.findByIdAndUpdate(jobId, jobData, { new: true });
+export const updateJob = async (jobId, jobData) => {
+  const job = await verifyJobExists(jobId);
+  const updatedJob = await Job.findByIdAndUpdate(jobId, jobData, { new: true });
+  return updatedJob;
+};
 
-export const deleteJob = async (jobId) => Job.findByIdAndUpdate(jobId, { unlisted: true }, { new: true });
+export const deleteJob = async (jobId) => {
+  const job = await verifyJobExists(jobId);
+  const deletedJob = await Job.findByIdAndUpdate(jobId, { unlisted: true }, { new: true });
+  return deletedJob;
+};
 
 export const filterJobs = async (filter) => {
   const query = {};
   if (filter.category) query.category = filter.category;
   if (filter.publisher) query.publisher = filter.publisher;
   if (filter.finished !== undefined) query.finished = filter.finished;
-  return Job.find(query).populate("userId", "username");
+
+  const jobs = await Job.find(query).populate("userId", "username");
+  if (!jobs.length) handleError("No jobs found for the given filter", 404);
+  return jobs;
 };
 
-export const getJobCategories = async () => JobCategory.find();
+export const getJobCategories = async () => {
+  const categories = await JobCategory.find();
+  return categories;
+};
 
 export const createJobCategory = async (data) => {
   const { category } = data;
@@ -53,4 +81,8 @@ export const createJobCategory = async (data) => {
   }
 };
 
-export const deleteJobCategory = async (categoryId) => JobCategory.findByIdAndDelete(categoryId);
+export const deleteJobCategory = async (categoryId) => {
+  const category = await JobCategory.findById(categoryId);
+  if (!category) handleError("Category not found", 404);
+  await JobCategory.findByIdAndDelete(categoryId);
+};

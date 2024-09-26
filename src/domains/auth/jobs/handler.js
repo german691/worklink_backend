@@ -1,4 +1,5 @@
 import { _encrypt } from "../../../util/cryptData.js";
+import { handleErrorResponse } from "../../../util/errorHandler.js";
 import {
   applyToWorkSchema,
   categorySetterSchema,
@@ -29,10 +30,17 @@ export const handleGetJob = async (req, res) => {
   try {
     await getJobSchema.validateAsync(req.query);
     const { offset = 0, limit = 10, username } = req.query;
-    const jobs = await getJobs({ offset, limit, username });
+    
+    const jobs = await getJobs({
+      offset: parseInt(offset, 10), 
+      limit: parseInt(limit, 10), 
+      username
+    });
+
     res.status(200).json(jobs);
+    
   } catch (error) {
-    res.status(400).send(error.message);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -42,17 +50,17 @@ export const handleGetJobDetails = async (req, res) => {
     const { jobId } = req.params;
 
     if (!jobId) {
-      return res.status(400).json({ error: "Job ID not provided" });
+      return res.status(400).json({ status: 400, message: "JobId not provided" });
     }
 
     const job = await getJobDetails(jobId);
     if (!job) {
-      return res.status(404).json({ error: "Job not found" });
+      return res.status(404).json({ status: 404, message: "Job not found" });
     }
 
     res.status(200).json(job);
   } catch (error) {
-    res.status(500).json({ error: "Internal server error", "error": error });
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -62,18 +70,18 @@ export const handleGetJobApplicants = async (req, res) => {
     const { jobId } = req.params;
 
     if (!jobId) {
-      return res.status(400).json({ error: "Job ID not provided" });
+      return res.status(400).json({ status: 400, message: "Job ID not provided" });
     }
 
     const job = await getJobDetails(jobId);
     if (!job) {
-      return res.status(404).json({ error: "Job not found" });
+      return res.status(404).json({ status: 404, message: "Job not found" });
     }
 
     const jobApplicantIds = job.applicantsId.map(id => _encrypt(id.toString()));
     res.status(200).json({ jobApplicantIds });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -89,12 +97,12 @@ export const handlePostJob = async (req, res) => {
       userId,
       title,
       description,
-      category
+      category,
     });
 
     res.status(201).json({ id: _encrypt(createdNewJob._id.toString()) });
   } catch (error) {
-    res.status(400).send(error.message);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -107,7 +115,7 @@ export const handleDropJob = async (req, res) => {
     const droppedJob = await dropJob({ jobId, userId });
     res.status(200).json(droppedJob);
   } catch (error) {
-    res.status(400).send(error.message);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -121,7 +129,7 @@ export const handleEditJob = async (req, res) => {
     const editedJob = await editJob({ jobId, userId, title, description });
     res.status(200).json(editedJob);
   } catch (error) {
-    res.status(400).send(error.message);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -134,7 +142,7 @@ export const handleApplyToJob = async (req, res) => {
     const appliedJob = await applyToJob({ jobId, userId });
     res.status(200).json(appliedJob);
   } catch (error) {
-    res.status(400).send(error.message);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -147,7 +155,7 @@ export const handleLeaveJob = async (req, res) => {
     const leftJob = await leaveJob({ jobId, userId });
     res.status(200).json(leftJob);
   } catch (error) {
-    res.status(400).send(error.message);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -160,7 +168,7 @@ export const handleSetFinalWorker = async (req, res) => {
     const updatedJob = await setFinalWorker({ userId, jobId, currentUserId: req.currentUser.userId });
     res.status(200).json(updatedJob);
   } catch (error) {
-    res.status(400).send(error.message);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -172,7 +180,19 @@ export const handleMarkJobAsCompleted = async (req, res) => {
     const completedJob = await markJobAsCompleted({ jobId, currentUserId: req.currentUser.userId });
     res.status(200).json(completedJob);
   } catch (error) {
-    res.status(400).send(error.message);
+    return handleErrorResponse(res, error);
+  }
+};
+
+export const handleCreateCategory = async (req, res) => {
+  try {
+    await categorySetterSchema.validateAsync(req.body);
+    const { category } = req.body;
+
+    const createdCategory = await createNewCategory({ category });
+    res.status(201).json(createdCategory);
+  } catch (error) {
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -181,6 +201,6 @@ export const handleGetCategories = async (req, res) => {
     const categories = await getCategories();
     res.status(200).json(categories);
   } catch (error) {
-    res.status(400).send(error.message);
+    return handleErrorResponse(res, error);
   }
 };
