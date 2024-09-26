@@ -57,7 +57,8 @@ const authenticateUser = async (value) => {
   if (!passwordMatch) handleError("Incorrect password", 401);
 
   const tokenData = { userId: fetchedUser._id, username: fetchedUser.username, userType: fetchedUser.userType };
-  return createToken(tokenData);
+  const token = await createToken(tokenData);
+  return { token, role: fetchedUser.userType };
 };
 
 const capitalize = ({ data }) => {

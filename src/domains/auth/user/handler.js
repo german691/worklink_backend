@@ -26,8 +26,8 @@ const handleLogin = async (req, res) => {
       throw error;
     }
     
-    const token = await authenticateUser(value);
-    return res.status(200).json({ token: token });
+    const { token, role } = await authenticateUser(value);
+    return res.status(200).json({ token: token, role });
   } catch (error) {
     return handleErrorResponse(res, error);
   }
