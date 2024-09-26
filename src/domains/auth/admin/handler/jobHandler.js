@@ -1,3 +1,4 @@
+import { handleError, handleErrorResponse } from "../../../../util/errorHandler.js";
 import { categorySetterSchema } from "../../../../validation/jobSchemes.js";
 import { 
   getAllJobs,
@@ -23,7 +24,7 @@ export const handleGetAllJobs = async (req, res) => {
 export const handleGetJobById = async (req, res) => {
   try {
     const job = await getJobById(req.params.jobId);
-    if (!job) return res.status(404).send("Job not found");
+    if (!job) return handleError("Job not found", 404);
     res.status(200).json(job);
   } catch (error) {
     return handleErrorResponse(res, error);
@@ -42,7 +43,7 @@ export const handleCreateJob = async (req, res) => {
 export const handleUpdateJob = async (req, res) => {
   try {
     const updatedJob = await updateJob(req.params.jobId, req.body);
-    if (!updatedJob) return res.status(404).send("Job not found");
+    if (!updatedJob) return handleError("Job not found", 404);
     res.status(200).json(updatedJob);
   } catch (error) {
     return handleErrorResponse(res, error);
@@ -52,7 +53,7 @@ export const handleUpdateJob = async (req, res) => {
 export const handleDeleteJob = async (req, res) => {
   try {
     const deletedJob = await deleteJob(req.params.jobId);
-    if (!deletedJob) return res.status(404).send("Job not found");
+    if (!deletedJob) return handleError("Job not found", 404);
     res.status(200).send("Job deleted successfully");
   } catch (error) {
     return handleErrorResponse(res, error);
@@ -87,7 +88,7 @@ export const handleCreateJobCategory = async (req, res) => {
     } else if (typeof category === 'string') {
       category = category.toLowerCase();
     } else {
-      throw new Error('Field "category" must be of type string or an array of strings.');
+      return handleError('Field "category" must be of type string or an array of strings', 400);
     }
 
     const createdCategories = await createJobCategory({ category });

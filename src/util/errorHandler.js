@@ -1,10 +1,12 @@
 export const handleError = (message, status) => {
   const error = new Error(message);
-  error.status = status;
+  error.status = status || 500;
   throw error;
 };
 
 export const handleErrorResponse = (res, error) => {
+  const statusCode = error.status || 500; 
+  
   if (error.isJoi) {
     return res.status(400).json({
       status: 400,
@@ -12,8 +14,8 @@ export const handleErrorResponse = (res, error) => {
     });
   }
 
-  return res.status(error.status).json({
-    status: error.status || 500,
+  return res.status(statusCode).json({
+    status: statusCode,
     message: error.message || 'Internal server error',
     details: error.details ?? [],
   });

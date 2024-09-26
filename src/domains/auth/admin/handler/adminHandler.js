@@ -1,4 +1,4 @@
-import { handleErrorResponse } from "../../../../util/errorHandler.js";
+import { handleError, handleErrorResponse } from "../../../../util/errorHandler.js";
 import authSchema from "../../../../validation/adminSchemes.js";
 import { 
   authenticateAdmin, 
@@ -12,7 +12,9 @@ import {
 export const handleAdminLogin = async (req, res) => {
   try {
     const { error, value } = authSchema.validate(req.body);
-    if (error) throw new Error(error.details[0].message);
+    if (error) {
+      throw error;
+    }
 
     const token = await authenticateAdmin(value.username, value.password);
     res.status(200).json({ token });
@@ -27,7 +29,9 @@ export const handleAdminRegister = async (req, res) => {
     if (key !== process.env.ADMIN_KEY) throw new Error("Unauthorized access.");
 
     const { error, value } = authSchema.validate(req.body);
-    if (error) throw new Error(error.details[0].message);
+    if (error) {
+      throw error;
+    }
 
     const newAdmin = await createNewAdmin(value.username, value.password);
     res.status(200).json(newAdmin);
@@ -39,7 +43,7 @@ export const handleAdminRegister = async (req, res) => {
 export const handleUpdateAdminInfo = async (req, res) => {
   try {
     const updatedAdmin = await updateAdminInfo(req.params.adminId, req.body);
-    if (!updatedAdmin) throw new Error("Admin not found");
+    if (!updatedAdmin) return handleError("Admin not found", 404);
     res.status(200).json(updatedAdmin);
   } catch (error) {
     return handleErrorResponse(res, error);

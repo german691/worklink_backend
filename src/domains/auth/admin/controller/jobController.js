@@ -3,13 +3,13 @@ import { handleError } from "../../../../util/errorHandler.js";
 
 const verifyJobExists = async (jobId) => {
   const job = await Job.findById(jobId);
-  if (!job) handleError("Job not found", 404);
+  if (!job) return handleError("Job not found", 404);
   return job;
 };
 
 export const getAllJobs = async () => {
   const jobs = await Job.find().populate("userId", "username");
-  if (!jobs.length) handleError("No jobs found", 404);
+  if (!jobs.length) return handleError("No jobs found", 404);
   return jobs;
 };
 
@@ -42,7 +42,7 @@ export const filterJobs = async (filter) => {
   if (filter.finished !== undefined) query.finished = filter.finished;
 
   const jobs = await Job.find(query).populate("userId", "username");
-  if (!jobs.length) handleError("No jobs found for the given filter", 404);
+  if (!jobs.length) return handleError("No jobs found for the given filter", 404);
   return jobs;
 };
 

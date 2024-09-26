@@ -6,7 +6,7 @@ import { handleError } from "../../../../util/errorHandler.js";
 
 const verifyAdminExists = async (username) => {
   const admin = await Admin.findOne({ username });
-  if (!admin) handleError("Invalid username", 404);
+  if (!admin) return handleError("Invalid username", 404);
   return admin;
 };
 
@@ -14,7 +14,7 @@ export const authenticateAdmin = async (username, password) => {
   const admin = await verifyAdminExists(username);
 
   const isMatch = await verifyHashedData(password, admin.password);
-  if (!isMatch) handleError("Incorrect password", 401);
+  if (!isMatch) return handleError("Incorrect password", 401);
 
   if (!admin.isActive) handleError("Admin account currently deactivated. Contact Superadmin.", 403);
 
@@ -25,7 +25,7 @@ export const createNewAdmin = async (username, password) => {
   if (!username || !password) handleError("Username and password are required", 400);
 
   const existingAdmin = await Admin.findOne({ username });
-  if (existingAdmin) handleError("Username is not available", 409);
+  if (existingAdmin) return handleError("Username is not available", 409);
 
   const hashedPassword = await hashData(password);
   const newAdmin = new Admin({ username, password: hashedPassword });
@@ -34,14 +34,14 @@ export const createNewAdmin = async (username, password) => {
 
 export const updateAdminInfo = async (adminId, updates) => {
   const updatedAdmin = await Admin.findByIdAndUpdate(adminId, updates, { new: true });
-  if (!updatedAdmin) handleError("Admin not found", 404);
+  if (!updatedAdmin) return handleError("Admin not found", 404);
   return updatedAdmin;
 };
 
 export const resetAdminPassword = async (userId, newPassword) => {
   const hashedPassword = await hashData(newPassword);
   const updatedAdmin = await Admin.findByIdAndUpdate(userId, { password: hashedPassword }, { new: true });
-  if (!updatedAdmin) handleError("Admin not found", 404);
+  if (!updatedAdmin) return handleError("Admin not found", 404);
   return updatedAdmin;
 };
 

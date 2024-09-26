@@ -24,7 +24,7 @@ export const handleGetUsersInfo = async (req, res) => {
 export const handleGetUserById = async (req, res) => {
   try {
     const user = await getUserById(req.params.userId);
-    if (!user) return res.status(404).send("User not found");
+    if (!user) return handleError("User not found", 404);;
     res.status(200).json(user);
   } catch (error) {
     return handleErrorResponse(res, error);
@@ -34,7 +34,7 @@ export const handleGetUserById = async (req, res) => {
 export const handleUpdateUserRole = async (req, res) => {
   try {
     const updatedUser = await updateUserRole(req.params.userId, req.body.newRole);
-    if (!updatedUser) return res.status(404).send("User not found");
+    if (!updatedUser) return handleError("User not found", 404);
     res.status(200).json(updatedUser);
   } catch (error) {
     return handleErrorResponse(res, error);
@@ -53,7 +53,7 @@ export const handleCreateNewUser = async (req, res) => {
 export const handleUpdateUserInfo = async (req, res) => {
   try {
     const updatedUser = await updateUserInfo(req.params.userId, req.body);
-    if (!updatedUser) return res.status(404).send("User not found");
+    if (!updatedUser) return handleError("User not found", 404);
     res.status(200).json(updatedUser);
   } catch (error) {
     return handleErrorResponse(res, error);
@@ -63,7 +63,7 @@ export const handleUpdateUserInfo = async (req, res) => {
 export const handleDeactivateUser = async (req, res) => {
   try {
     const updatedUser = await deactivateUser(req.params.userId);
-    if (!updatedUser) return res.status(404).send("User not found");
+    if (!updatedUser) return handleError("User not found", 404);
     res.status(200).json(updatedUser);
   } catch (error) {
     return handleErrorResponse(res, error);
@@ -73,7 +73,7 @@ export const handleDeactivateUser = async (req, res) => {
 export const handleReactivateUser = async (req, res) => {
   try {
     const updatedUser = await reactivateUser(req.params.userId);
-    if (!updatedUser) return res.status(404).send("User not found");
+    if (!updatedUser) return handleError("User not found", 404);
     res.status(200).json(updatedUser);
   } catch (error) {
     return handleErrorResponse(res, error);
@@ -83,7 +83,7 @@ export const handleReactivateUser = async (req, res) => {
 export const handleUserPasswordReset = async (req, res) => {
   try {
     const updatedUser = await forcePasswordReset(req.params.userId, req.body.newPassword);
-    if (!updatedUser) return res.status(404).send("User not found");
+    if (!updatedUser) return handleError("User not found", 404);
     res.status(200).json(updatedUser);
   } catch (error) {
     return handleErrorResponse(res, error);
