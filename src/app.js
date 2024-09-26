@@ -14,15 +14,13 @@ const app = express();
 app.use(cors());
 app.use(bodyParser());
 
-// import activityLogger from "./middleware/logs/activityLogger.js";
-// app.use(activityLogger);
-
-app.use("/api", routes);
+app.use("/api", activityLogger, routes);
 
 import { initAdmin } from "./util/initAdmin.js";
 initAdmin();
 
 import { initSuperadmin } from "./util/initSuperadmin.js";
+import activityLogger from "./middleware/logs/activityLogger.js";
 initSuperadmin();
 
 export default app;
