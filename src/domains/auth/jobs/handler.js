@@ -1,4 +1,5 @@
 import { _encrypt } from "../../../util/cryptData.js";
+import { handleErrorResponse } from "../../../util/errorHandler.js";
 import {
   applyToWorkSchema,
   categorySetterSchema,
@@ -39,18 +40,7 @@ export const handleGetJob = async (req, res) => {
     res.status(200).json(jobs);
     
   } catch (error) {
-    if (error.isJoi) {
-      res.status(400).json({
-        status: 400,
-        message: error.details[0].message,
-      });
-    } else {
-      res.status(500).json({
-        status: 500,
-        message: 'Internal Server Error',
-        details: error.message,
-      });
-    }
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -70,18 +60,7 @@ export const handleGetJobDetails = async (req, res) => {
 
     res.status(200).json(job);
   } catch (error) {
-    if (error.isJoi) {
-      res.status(400).json({
-        status: 400,
-        message: error.details[0].message,
-      });
-    } else {
-      res.status(500).json({
-        status: 500,
-        message: 'Internal Server Error',
-        details: error.message,
-      });
-    }
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -102,18 +81,7 @@ export const handleGetJobApplicants = async (req, res) => {
     const jobApplicantIds = job.applicantsId.map(id => _encrypt(id.toString()));
     res.status(200).json({ jobApplicantIds });
   } catch (error) {
-    if (error.isJoi) {
-      res.status(400).json({
-        status: 400,
-        message: error.details[0].message,
-      });
-    } else {
-      res.status(500).json({
-        status: 500,
-        message: 'Internal Server Error',
-        details: error.message,
-      });
-    }
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -134,18 +102,7 @@ export const handlePostJob = async (req, res) => {
 
     res.status(201).json({ id: _encrypt(createdNewJob._id.toString()) });
   } catch (error) {
-    if (error.isJoi) {
-      res.status(400).json({
-        status: 400,
-        message: error.details[0].message,
-      });
-    } else {
-      res.status(500).json({
-        status: 500,
-        message: 'Internal Server Error',
-        details: error.message,
-      });
-    }
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -158,18 +115,7 @@ export const handleDropJob = async (req, res) => {
     const droppedJob = await dropJob({ jobId, userId });
     res.status(200).json(droppedJob);
   } catch (error) {
-    if (error.isJoi) {
-      res.status(400).json({
-        status: 400,
-        message: error.details[0].message,
-      });
-    } else {
-      res.status(500).json({
-        status: 500,
-        message: 'Internal Server Error',
-        details: error.message,
-      });
-    }
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -183,18 +129,7 @@ export const handleEditJob = async (req, res) => {
     const editedJob = await editJob({ jobId, userId, title, description });
     res.status(200).json(editedJob);
   } catch (error) {
-    if (error.isJoi) {
-      res.status(400).json({
-        status: 400,
-        message: error.details[0].message,
-      });
-    } else {
-      res.status(500).json({
-        status: 500,
-        message: 'Internal Server Error',
-        details: error.message,
-      });
-    }
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -207,18 +142,7 @@ export const handleApplyToJob = async (req, res) => {
     const appliedJob = await applyToJob({ jobId, userId });
     res.status(200).json(appliedJob);
   } catch (error) {
-    if (error.isJoi) {
-      res.status(400).json({
-        status: 400,
-        message: error.details[0].message,
-      });
-    } else {
-      res.status(500).json({
-        status: 500,
-        message: 'Internal Server Error',
-        details: error.message,
-      });
-    }
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -231,18 +155,7 @@ export const handleLeaveJob = async (req, res) => {
     const leftJob = await leaveJob({ jobId, userId });
     res.status(200).json(leftJob);
   } catch (error) {
-    if (error.isJoi) {
-      res.status(400).json({
-        status: 400,
-        message: error.details[0].message,
-      });
-    } else {
-      res.status(500).json({
-        status: 500,
-        message: 'Internal Server Error',
-        details: error.message,
-      });
-    }
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -255,18 +168,7 @@ export const handleSetFinalWorker = async (req, res) => {
     const updatedJob = await setFinalWorker({ userId, jobId, currentUserId: req.currentUser.userId });
     res.status(200).json(updatedJob);
   } catch (error) {
-    if (error.isJoi) {
-      res.status(400).json({
-        status: 400,
-        message: error.details[0].message,
-      });
-    } else {
-      res.status(500).json({
-        status: 500,
-        message: 'Internal Server Error',
-        details: error.message,
-      });
-    }
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -278,18 +180,7 @@ export const handleMarkJobAsCompleted = async (req, res) => {
     const completedJob = await markJobAsCompleted({ jobId, currentUserId: req.currentUser.userId });
     res.status(200).json(completedJob);
   } catch (error) {
-    if (error.isJoi) {
-      res.status(400).json({
-        status: 400,
-        message: error.details[0].message,
-      });
-    } else {
-      res.status(500).json({
-        status: 500,
-        message: 'Internal Server Error',
-        details: error.message,
-      });
-    }
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -301,7 +192,7 @@ export const handleCreateCategory = async (req, res) => {
     const createdCategory = await createNewCategory({ category });
     res.status(201).json(createdCategory);
   } catch (error) {
-    res.status(400).send(error.message);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -310,10 +201,6 @@ export const handleGetCategories = async (req, res) => {
     const categories = await getCategories();
     res.status(200).json(categories);
   } catch (error) {
-    res.status(500).json({
-      status: 500,
-      message: 'Internal Server Error',
-      details: error.message,
-    });
+    return handleErrorResponse(res, error);
   }
 };

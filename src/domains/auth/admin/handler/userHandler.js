@@ -1,3 +1,4 @@
+import { handleErrorResponse } from "../../../../util/errorHandler.js";
 import {
   getUsersInfo,
   getUserById,
@@ -11,14 +12,12 @@ import {
   exportUserList
 } from "../controller/userController.js";
 
-const handleErrorResponse = (res, error) => res.status(error.status || 400).json({ error: error.message });
-
 export const handleGetUsersInfo = async (req, res) => {
   try {
     const users = await getUsersInfo();
     res.status(200).json(users);
   } catch (error) {
-    handleErrorResponse(res, error);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -28,7 +27,7 @@ export const handleGetUserById = async (req, res) => {
     if (!user) return res.status(404).send("User not found");
     res.status(200).json(user);
   } catch (error) {
-    handleErrorResponse(res, error);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -38,7 +37,7 @@ export const handleUpdateUserRole = async (req, res) => {
     if (!updatedUser) return res.status(404).send("User not found");
     res.status(200).json(updatedUser);
   } catch (error) {
-    handleErrorResponse(res, error);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -47,7 +46,7 @@ export const handleCreateNewUser = async (req, res) => {
     const newUser = await createNewUser(req.body);
     res.status(201).json(newUser);
   } catch (error) {
-    handleErrorResponse(res, error);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -57,7 +56,7 @@ export const handleUpdateUserInfo = async (req, res) => {
     if (!updatedUser) return res.status(404).send("User not found");
     res.status(200).json(updatedUser);
   } catch (error) {
-    handleErrorResponse(res, error);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -67,7 +66,7 @@ export const handleDeactivateUser = async (req, res) => {
     if (!updatedUser) return res.status(404).send("User not found");
     res.status(200).json(updatedUser);
   } catch (error) {
-    handleErrorResponse(res, error);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -77,7 +76,7 @@ export const handleReactivateUser = async (req, res) => {
     if (!updatedUser) return res.status(404).send("User not found");
     res.status(200).json(updatedUser);
   } catch (error) {
-    handleErrorResponse(res, error);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -87,7 +86,7 @@ export const handleUserPasswordReset = async (req, res) => {
     if (!updatedUser) return res.status(404).send("User not found");
     res.status(200).json(updatedUser);
   } catch (error) {
-    handleErrorResponse(res, error);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -96,7 +95,7 @@ export const handleGetUserActivityLogs = async (req, res) => {
     const logs = await getUserActivityLogs(req.params.userId);
     res.status(200).json(logs);
   } catch (error) {
-    handleErrorResponse(res, error);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -105,7 +104,7 @@ export const handleGenerateUserReport = async (req, res) => {
     const report = await generateUserReport(req.body);
     res.status(200).json(report);
   } catch (error) {
-    handleErrorResponse(res, error);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -116,6 +115,6 @@ export const handleExportUserList = async (req, res) => {
     res.attachment("users.csv");
     res.send(csv);
   } catch (error) {
-    handleErrorResponse(res, error);
+    return handleErrorResponse(res, error);
   }
 };

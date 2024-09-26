@@ -2,43 +2,59 @@ import { hashData, verifyHashedData } from "../../../../util/hashData.js";
 import createToken from "../../../../util/createToken.js";
 import { _encrypt } from "../../../../util/cryptData.js";
 import { Admin } from "../model.js";
+import { handleError } from "../../../../util/errorHandler.js";
+
+const verifyAdminExists = async (username) => {
+  const admin = await Admin.findOne({ username });
+  if (!admin) handleError("Invalid username", 404);
+  return admin;
+};
 
 export const authenticateAdmin = async (username, password) => {
-  const admin = await Admin.findOne({ username });
-  if (!admin) throw new Error("Invalid username");
+  const admin = await verifyAdminExists(username);
 
   const isMatch = await verifyHashedData(password, admin.password);
-  if (!isMatch) throw new Error("Incorrect password");
+  if (!isMatch) handleError("Incorrect password", 401);
 
-  if (!admin.isActive) Error("Admin account currently deactivated. Contact Superadmin.");
+  if (!admin.isActive) handleError("Admin account currently deactivated. Contact Superadmin.", 403);
 
   return createToken({ userId: admin._id, username: admin.username, userType: admin.userType });
 };
 
 export const createNewAdmin = async (username, password) => {
-  if (!username || !password) throw new Error("Username and password are required");
+  if (!username || !password) handleError("Username and password are required", 400);
 
   const existingAdmin = await Admin.findOne({ username });
-  if (existingAdmin) throw new Error("Username is not available");
+  if (existingAdmin) handleError("Username is not available", 409);
 
   const hashedPassword = await hashData(password);
   const newAdmin = new Admin({ username, password: hashedPassword });
   return newAdmin.save();
 };
 
-export const updateAdminInfo = async (adminId, updates) => Admin.findByIdAndUpdate(adminId, updates, { new: true });
+export const updateAdminInfo = async (adminId, updates) => {
+  const updatedAdmin = await Admin.findByIdAndUpdate(adminId, updates, { new: true });
+  if (!updatedAdmin) handleError("Admin not found", 404);
+  return updatedAdmin;
+};
 
 export const resetAdminPassword = async (userId, newPassword) => {
   const hashedPassword = await hashData(newPassword);
-  return Admin.findByIdAndUpdate(userId, { password: hashedPassword }, { new: true });
+  const updatedAdmin = await Admin.findByIdAndUpdate(userId, { password: hashedPassword }, { new: true });
+  if (!updatedAdmin) handleError("Admin not found", 404);
+  return updatedAdmin;
 };
 
-export const getAdminList = async () => Admin.find();
+export const getAdminList = async () => {
+  const admins = await Admin.find();
+  return admins;
+};
 
 export const deleteAdmin = async (req, res) => {
   const { adminId } = req.params;
   const admin = await Admin.findById(adminId);
   if (!admin) return res.status(404).send("Admin not found");
+  
   admin.isActive = false;
   await admin.save();
   res.status(200).send("Admin soft deleted successfully");

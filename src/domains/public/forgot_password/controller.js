@@ -5,11 +5,15 @@ import { sendOTP, deleteOTP, verifyOTP } from "./../otp/controller.js";
 const sendPasswordResetOTPEmail = async (email) => {
   const existingUser = await User.findOne({ email });
   if (!existingUser) {
-    throw new Error("There's no account for the provided email");
+    const error = new Error("No account found associated with the provided email");
+    error.status = 404;
+    throw error;
   }
 
   if (!existingUser.verified) {
-    throw new Error("This email hasn't been verified yet. Check your inbox.");
+    const error = new Error("This email hasn't been verified yet. Please check your inbox, or request a new code");
+    error.status = 403;
+    throw error;
   }
 
   const otpDetails = {
@@ -25,7 +29,9 @@ const sendPasswordResetOTPEmail = async (email) => {
 const resetUserPassword = async ({ email, otp, password }) => {
   const validOtp = await verifyOTP({ email, otp });
   if (!validOtp) {
-    throw new Error("Invalid code passed. Check your inbox.");
+    const error = new Error("Invalid code passed. Please check your inbox, or request a new code.");
+    error.status = 422;
+    throw error;
   }
 
   const hashedNewPassword = await hashData(password);

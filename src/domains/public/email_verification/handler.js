@@ -1,3 +1,4 @@
+import { handleErrorResponse } from "../../../util/errorHandler.js";
 import { verifyUserEmail, sendVerificationOTPEmail } from "./controller.js";
 
 const OTPMailHandler = async (req, res) => {
@@ -10,7 +11,7 @@ const OTPMailHandler = async (req, res) => {
     await verifyUserEmail({ email, otp });
     return res.status(200).json({ email, verify: true });
   } catch (error) {
-    return res.status(400).send(error.message);
+    return handleErrorResponse(res, error);
   }
 };
 
@@ -24,7 +25,7 @@ const emailVerifyHandler = async (req, res) => {
     const createdEmailVerificationOTP = await sendVerificationOTPEmail(email);
     return res.status(200).json(createdEmailVerificationOTP);
   } catch (error) {
-    return res.status(400).send(error.message);
+    return handleErrorResponse(res, error);
   }
 };
 

@@ -3,6 +3,13 @@ import { hashData } from "../../../../util/hashData.js";
 import User from "../../user/model.js";
 import { _encrypt } from "../../../../util/cryptData.js"; 
 import { stringify } from "csv-stringify";
+import { handleError } from "../../../../util/errorHandler.js";
+
+const verifyUserExists = async (userId) => {
+  const user = await User.findById(userId);
+  if (!user) handleError("User not found", 404);
+  return user;
+};
 
 export const getUsersInfo = async () => {
   const users = await User.find();
@@ -12,16 +19,22 @@ export const getUsersInfo = async () => {
   }));
 };
 
-export const getUserById = async userId => User.findById(userId);
+export const getUserById = async (userId) => {
+  return await verifyUserExists(userId);
+};
 
-export const updateUserRole = async (userId, newRole) => User.findByIdAndUpdate(userId, { role: newRole }, { new: true });
+export const updateUserRole = async (userId, newRole) => {
+  const user = await verifyUserExists(userId);
+  user.role = newRole;
+  return await user.save();
+};
 
 export const createNewUser = async (userData) => {
   const { username, password, role, email } = userData;
-  if (!username || !password || !email) throw new Error("Missing required fields");
+  if (!username || !password || !email) handleError("Missing required fields", 400);
   
   const existingUser = await User.findOne({ username });
-  if (existingUser) throw new Error("Username already taken");
+  if (existingUser) handleError("Username already taken", 409);
 
   const hashedPassword = await hashData(password);
   const newUser = new User({
@@ -33,34 +46,36 @@ export const createNewUser = async (userData) => {
     createdAt: new Date()
   });
   
-  return newUser.save();
+  return await newUser.save();
 };
 
 export const updateUserInfo = async (userId, updates) => {
-  const updatedUser = await User.findByIdAndUpdate(userId, updates, { new: true });
-  return updatedUser;
+  const user = await verifyUserExists(userId);
+  Object.assign(user, updates);
+  return await user.save();
 };
 
 export const deactivateUser = async (userId) => {
-  const user = await User.findById(userId);
-  if (!user) throw new Error("User not found");
+  const user = await verifyUserExists(userId);
   user.isActive = false;
-  return user.save();
+  return await user.save();
 };
 
 export const reactivateUser = async (userId) => {
-  const user = await User.findById(userId);
-  if (!user) throw new Error("User not found");
+  const user = await verifyUserExists(userId);
   user.isActive = true;
-  return user.save();
+  return await user.save();
 };
 
 export const userPasswordReset = async (userId, newPassword) => {
+  const user = await verifyUserExists(userId);
   const hashedPassword = await hashData(newPassword);
-  return User.findByIdAndUpdate(userId, { password: hashedPassword }, { new: true });
+  user.password = hashedPassword;
+  return await user.save();
 };
 
 export const getUserActivityLogs = async (userId) => {
+  await verifyUserExists(userId);
   const logs = await Log.find({ userId }).sort({ timestamp: -1 });
   return logs;
 };
@@ -85,5 +100,6 @@ export const generateUserReport = async (filter) => {
 
 export const exportUserList = async () => {
   const users = await User.find();
+  if (!users.length) handleError("No users available for export", 404);
   return stringify(users, { header: true });
 };
