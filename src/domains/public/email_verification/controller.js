@@ -2,9 +2,11 @@ import User from "./../../auth/user/model.js";
 import { sendOTP, verifyOTP, deleteOTP } from "./../otp/controller.js";
 
 const verifyUserEmail = async ({ email, otp }) => {
-  const validOTP = await verifyOTP({ email, otp });
-  if (!validOTP) {
-    throw new Error("Invalid code passed. Check your inbox.");
+  const validOtp = await verifyOTP({ email, otp });
+  if (!validOtp) {
+    const error = new Error("Invalid code passed. Please check your inbox, or request a new code.");
+    error.status = 422;
+    throw error;
   }
 
   await User.updateOne({ email }, { verified: true });
@@ -14,7 +16,9 @@ const verifyUserEmail = async ({ email, otp }) => {
 const sendVerificationOTPEmail = async (email) => {
   const existingUser = await User.findOne({ email });
   if (!existingUser) {
-    throw new Error("There is no user for the provided email.");
+    const error = new Error("No account found associated with the provided email");
+    error.status = 404;
+    throw error;
   }
 
   const otpDetails = {

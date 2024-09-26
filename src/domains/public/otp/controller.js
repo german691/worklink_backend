@@ -2,33 +2,12 @@ import OTP from "./model.js";
 import generateOtp from "./../../../util/generateOtp.js";
 import sendEmail from "./../../../util/sendEmail.js";
 import { hashData, verifyHashedData } from "./../../../util/hashData.js";
+import { handleError } from "../../../util/errorHandler.js";
 const { AUTH_EMAIL } = process.env;
-
-const verifyOTP = async ({ email, otp }) => {
-  if (!(email && otp)) {
-    throw new Error("Values for email and otp must be provided");
-  }
-
-  const matchedOTPRecord = await OTP.findOne({ email });
-
-  if (!matchedOTPRecord) {
-    throw new Error("No OTP record found");
-  }
-
-  const { expiresAt } = matchedOTPRecord;
-
-  if (expiresAt < Date.now()) {
-    await OTP.deleteOne({ email });
-    throw new Error("Code has expired. Please, request for a new one.");
-  }
-
-  const hashedOTP = matchedOTPRecord.otp;
-  return verifyHashedData(otp, hashedOTP);
-};
 
 const sendOTP = async ({ email, subject, message, duration }) => {
   if (!(email && subject && message)) {
-    throw new Error("Missing values for email, subject or message");
+    return handleError("Missing values for email, subject or message", 400);
   }
 
   await OTP.deleteOne({ email });
@@ -53,8 +32,32 @@ const sendOTP = async ({ email, subject, message, duration }) => {
   return newOTP.save();
 };
 
+const verifyOTP = async ({ email, otp }) => {
+  if (!(email && otp)) {
+    return handleError("Values for email and otp must be provided", 400);
+  }
+
+  const matchedOTPRecord = await OTP.findOne({ email });
+
+  if (!matchedOTPRecord) {
+    return handleError("OTP record found", 404);
+  }
+
+  const { expiresAt } = matchedOTPRecord;
+
+  if (expiresAt < Date.now()) {
+    await OTP.deleteOne({ email });
+    return handleError("Code has expired. Please, request for a new one", 410);
+  }
+
+  const hashedOTP = matchedOTPRecord.otp;
+  return verifyHashedData(otp, hashedOTP);
+};
+
 const deleteOTP = async (email) => {
   await OTP.deleteOne({ email });
 };
 
 export { sendOTP, verifyOTP, deleteOTP };
+
+
