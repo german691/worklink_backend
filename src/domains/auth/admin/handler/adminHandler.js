@@ -16,8 +16,8 @@ export const handleAdminLogin = async (req, res) => {
       throw error;
     }
 
-    const token = await authenticateAdmin(value.username, value.password);
-    res.status(200).json({ token });
+    const { token, role } = await authenticateAdmin(value.username, value.password);
+    res.status(200).json({ token, role });
   } catch (error) {
     return handleErrorResponse(res, error);
   }

@@ -18,7 +18,8 @@ export const authenticateAdmin = async (username, password) => {
 
   if (!admin.isActive) handleError("Admin account currently deactivated. Contact Superadmin.", 403);
 
-  return createToken({ userId: admin._id, username: admin.username, userType: admin.userType });
+  const token = await createToken({ userId: admin._id, username: admin.username, userType: admin.userType });
+  return { token, role: admin.userType };
 };
 
 export const createNewAdmin = async (username, password) => {
