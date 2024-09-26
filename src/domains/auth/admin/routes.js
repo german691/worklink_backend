@@ -134,19 +134,19 @@ router.put("/jobs/:jobId", auth(["admin", "superadmin"]), handleUpdateJob);
 router.delete("/jobs/:jobId", auth(["admin", "superadmin"]), handleDeleteJob);
 
 // Filtrar trabajo
-router.post("/jobs/filter", auth(["admin", "superadmin"]), handleFilterJobs);
+router.post("/job_filter", auth(["admin", "superadmin"]), handleFilterJobs);
 
 // Obtener categorías de trabajo
-router.get("/jobs/categories", auth(["admin", "superadmin"]), handleGetJobCategories);
+router.get("/job_categories", auth(["admin", "superadmin"]), handleGetJobCategories);
 
 // Crear categiorías de trabajo ([] o "")
-router.post("/jobs/categories", auth(["admin", "superadmin"]), handleCreateJobCategory);
+router.post("/job_categories", auth(["admin", "superadmin"]), handleCreateJobCategory);
 
 // Desactivar categoría (soft delete), sin implementar
 // router.delete("/jobs/categories/:categoryId", auth(["admin"]), handleDeleteJobCategory);
 
 // Eliminar categoría (si no es utilizada en ninguna parte)
-router.delete("/jobs/categories/:categoryId", auth(["admin", "superadmin"]), handleDeleteJobCategory);
+router.delete("/job_categories/:categoryId", auth(["admin", "superadmin"]), handleDeleteJobCategory);
 
 // User activity management
 
