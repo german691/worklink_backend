@@ -46,47 +46,117 @@ import {
     handleUserPasswordReset
 } from './handler/userHandler.js';
 
-// Admin management
+
+// Admin management ---------------------------------------------------------------------
+
+// login standar
 router.post("/auth", handleAdminLogin);
+
+// registrar admin (solo el superadmin puede registrar nuevos administradores)
 router.post("/register", auth(["superadmin"]), handleAdminRegister);
-router.get("/user_info", auth(["admin"]), handleGetUsersInfo);
-router.get("/users/:userId", auth(["admin"]), handleGetUserById);
-router.put("/users/:userId/role", auth(["admin"]), handleUpdateUserRole);
-router.put("/users/:userId", auth(["admin"]), handleUpdateUserInfo);
-router.post("/users", auth(["admin"]), handleCreateNewUser);
-router.delete("/users/:userId", auth(["admin"]), handleDeactivateUser);
-router.put("/users/:userId/reactivate", auth(["admin"]), handleReactivateUser);
-router.put("/users/:userId/reset_password", auth(["admin"]), handleUserPasswordReset);
 
-// Admin account management
-router.get("/admins", auth(["admin"]), handleGetAdminList);
-router.delete("/admins/:adminId", auth(["superadmin"]), handleDeleteAdmin);
-router.put("/admins/:adminId", auth(["admin"]), handleUpdateAdminInfo);
-router.get("/admin/:adminId", auth(["admin"]), handleResetAdminPassword);
+// obtener toda la info de los usuarios 
+router.get("/user_info", auth(["admin", "superadmin"]), handleGetUsersInfo);
+
+// Obtener info de usuario por ID
+router.get("/users/:userId", auth(["admin", "superadmin"]), handleGetUserById);
+
+// Actualizar rol de usuario [client, worker]
+router.put("/users/:userId/role", auth(["admin", "superadmin"]), handleUpdateUserRole);
+
+// Actualizar datos de usuario
+router.put("/users/:userId", auth(["admin", "superadmin"]), handleUpdateUserInfo);
+
+// Crear un nuevo usuario (sin verficación de mail)
+router.post("/users", auth(["admin", "superadmin"]), handleCreateNewUser);
+
+// Desactivar usuario
+router.patch("/users/:userId", auth(["admin", "superadmin"]), handleDeactivateUser);
+
+// Reactivar usuario
+router.patch("/users/:userId/reactivate", auth(["admin", "superadmin"]), handleReactivateUser);
+
+// Resetear usuario
+router.patch("/users/:userId/reset_password", auth(["admin", "superadmin"]), handleUserPasswordReset);
 
 
-// Logs management
-router.get("/logs", auth(["admin"]), handleGetLogs);
-router.get("/logs/:logId", auth(["admin"]), handleGetLogById);
+// Admin account management -------------------------------------------------------------
+
+// Obtener la lista de todos los admins
+router.get("/admins", auth(["superadmin"]), handleGetAdminList);
+
+// Desactivar un admin
+router.patch("/admins/:adminId", auth(["superadmin"]), handleDeleteAdmin);
+
+// Editar información de un admin
+router.put("/admins/:adminId", auth(["admin", "superadmin"]), handleUpdateAdminInfo);
+
+// Resetear contraseña de un admin
+router.get("/admin/:adminId", auth(["superadmin"]), handleResetAdminPassword);
+
+
+// Logs management ----------------------------------------------------------------------
+
+// Obtener logs
+router.get("/logs", auth(["admin", "superadmin"]), handleGetLogs);
+
+// Obtener log por ID
+router.get("/logs/:logId", auth(["admin", "superadmin"]), handleGetLogById);
+
+// Eliminar log
 router.delete("/logs/:logId", auth(["superadmin"]), handleDeleteLog);
-router.post("/logs/filter", auth(["admin"]), handleFilterLogs);
-router.get("/logs/export", auth(["superadmin"]), handleExportLogs);
-router.post("/logs/search", auth(["admin"]), handleSearchLogs);
 
-// Job management
-router.get("/jobs", auth(["admin"]), handleGetAllJobs);
-router.get("/jobs/:jobId", auth(["admin"]), handleGetJobById);
-router.post("/jobs", auth(["admin"]), handleCreateJob);
-router.put("/jobs/:jobId", auth(["admin"]), handleUpdateJob);
-router.delete("/jobs/:jobId", auth(["admin"]), handleDeleteJob);
-router.post("/jobs/filter", auth(["admin"]), handleFilterJobs);
-router.get("/jobs/categories", auth(["admin"]), handleGetJobCategories);
-router.post("/jobs/categories", auth(["admin"]), handleCreateJobCategory);
-router.delete("/jobs/categories/:categoryId", auth(["admin"]), handleDeleteJobCategory);
+// Filtrar logs
+router.post("/logs/filter", auth(["admin", "superadmin"]), handleFilterLogs);
+
+// Exportar logs a CSV
+router.get("/logs/export", auth(["superadmin"]), handleExportLogs);
+
+// Buscar entre los logs
+router.post("/logs/search", auth(["admin", "superadmin"]), handleSearchLogs);
+
+
+// Job management -----------------------------------------------------------------------
+
+// Obtener todos los trabajos
+router.get("/jobs", auth(["admin", "superadmin"]), handleGetAllJobs);
+
+// Obtener trabjo por ID
+router.get("/jobs/:jobId", auth(["admin", "superadmin"]), handleGetJobById);
+
+// Crear trabajo
+router.post("/jobs", auth(["admin", "superadmin"]), handleCreateJob);
+
+// Actualizar trabajo
+router.put("/jobs/:jobId", auth(["admin", "superadmin"]), handleUpdateJob);
+
+// Eliminar trabajo
+router.delete("/jobs/:jobId", auth(["admin", "superadmin"]), handleDeleteJob);
+
+// Filtrar trabajo
+router.post("/job_filter", auth(["admin", "superadmin"]), handleFilterJobs);
+
+// Obtener categorías de trabajo
+router.get("/job_categories", auth(["admin", "superadmin"]), handleGetJobCategories);
+
+// Crear categiorías de trabajo ([] o "")
+router.post("/job_categories", auth(["admin", "superadmin"]), handleCreateJobCategory);
+
+// Desactivar categoría (soft delete), sin implementar
+// router.delete("/jobs/categories/:categoryId", auth(["admin"]), handleDeleteJobCategory);
+
+// Eliminar categoría (si no es utilizada en ninguna parte)
+router.delete("/job_categories/:categoryId", auth(["admin", "superadmin"]), handleDeleteJobCategory);
 
 // User activity management
-router.get("/users/:userId/activity", auth(["admin"]), handleGetUserActivityLogs);
-router.post("/users/report", auth(["admin"]), handleGenerateUserReport);
-router.get("/users/export", auth(["admin"]), handleExportUserList);
+
+// Obtener actividad de usuario
+router.get("/users/:userId/activity", auth(["admin", "superadmin"]), handleGetUserActivityLogs);
+
+// Generar reporte de usuario
+router.post("/users/report", auth(["admin", "superadmin"]), handleGenerateUserReport);
+
+// Exportar lista de usuarios
+router.get("/users/export", auth(["admin", "superadmin"]), handleExportUserList);
 
 export default router;

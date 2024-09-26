@@ -18,6 +18,7 @@ export const initAdmin = async () => {
     const adminObj = {
       username,
       password: hashedPassword,
+      userType: "admin"
     };
 
     await Admin.create(adminObj);

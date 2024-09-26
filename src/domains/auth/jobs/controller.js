@@ -165,6 +165,5 @@ export {
   markJobAsCompleted,
   applyToJob,
   leaveJob,
-  createNewCategory,
   getCategories
 };

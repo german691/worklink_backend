@@ -1,3 +1,4 @@
+import { categorySetterSchema } from "../../../../validation/jobSchemes.js";
 import { 
   getAllJobs,
   getJobById,
@@ -69,8 +70,8 @@ export const handleFilterJobs = async (req, res) => {
 
 export const handleGetJobCategories = async (req, res) => {
   try {
-    const categories = await getJobCategories();
-    res.status(200).json(categories);
+    const category = await getJobCategories();
+    res.status(200).json(category);
   } catch (error) {
     return handleErrorResponse(res, error);
   }
@@ -78,8 +79,20 @@ export const handleGetJobCategories = async (req, res) => {
 
 export const handleCreateJobCategory = async (req, res) => {
   try {
-    const newCategory = await createJobCategory(req.body);
-    res.status(201).json(newCategory);
+    await categorySetterSchema.validateAsync(req.body);
+    let { category } = req.body;
+
+    if (Array.isArray(category)) {
+      category = category.map(c => typeof c === 'string' ? c.toLowerCase() : '');
+    } else if (typeof category === 'string') {
+      category = category.toLowerCase();
+    } else {
+      throw new Error('Field "category" must be of type string or an array of strings.');
+    }
+
+    const createdCategories = await createJobCategory({ category });
+
+    res.status(201).json(createdCategories);
   } catch (error) {
     return handleErrorResponse(res, error);
   }
@@ -93,3 +106,4 @@ export const handleDeleteJobCategory = async (req, res) => {
     return handleErrorResponse(res, error);
   }
 };
+

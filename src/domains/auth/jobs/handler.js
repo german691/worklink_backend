@@ -20,7 +20,6 @@ import {
   dropJob,
   editJob,
   getCategories,
-  createNewCategory,
   applyToJob,
   leaveJob,
   setFinalWorker,
@@ -31,6 +30,7 @@ export const handleGetJob = async (req, res) => {
   try {
     await getJobSchema.validateAsync(req.query);
     const { offset = 0, limit = 10, username } = req.query;
+    
     const jobs = await getJobs({
       offset: parseInt(offset, 10), 
       limit: parseInt(limit, 10), 
