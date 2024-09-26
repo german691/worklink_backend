@@ -1,4 +1,4 @@
-import { handleErrorResponse } from "../../../../util/errorHandler.js";
+import { handleError, handleErrorResponse } from "../../../../util/errorHandler.js";
 import { 
   getAllLogs, 
   getLogById, 
@@ -20,7 +20,7 @@ export const handleGetLogs = async (req, res) => {
 export const handleGetLogById = async (req, res) => {
   try {
     const log = await getLogById(req.params.logId);
-    if (!log) throw new Error("Log not found");
+    if (!log) return handleError("Log not found", 404);
     res.status(200).json(log);
   } catch (error) {
     return handleErrorResponse(res, error);
@@ -30,7 +30,7 @@ export const handleGetLogById = async (req, res) => {
 export const handleDeleteLog = async (req, res) => {
   try {
     const deletedLog = await deleteLogById(req.params.logId);
-    if (!deletedLog) throw new Error("Log not found");
+    if (!deletedLog) return handleError("Log not found", 404);
     res.status(200).json({ message: "Log deleted successfully" });
   } catch (error) {
     return handleErrorResponse(res, error);
