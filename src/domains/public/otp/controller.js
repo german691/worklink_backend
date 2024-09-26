@@ -2,13 +2,12 @@ import OTP from "./model.js";
 import generateOtp from "./../../../util/generateOtp.js";
 import sendEmail from "./../../../util/sendEmail.js";
 import { hashData, verifyHashedData } from "./../../../util/hashData.js";
+import { handleError } from "../../../util/errorHandler.js";
 const { AUTH_EMAIL } = process.env;
 
 const sendOTP = async ({ email, subject, message, duration }) => {
   if (!(email && subject && message)) {
-    const error = new Error("Missing values for email, subject or message");
-    error.status = 400;
-    throw error;
+    return handleError("Missing values for email, subject or message", 400);
   }
 
   await OTP.deleteOne({ email });
@@ -35,24 +34,20 @@ const sendOTP = async ({ email, subject, message, duration }) => {
 
 const verifyOTP = async ({ email, otp }) => {
   if (!(email && otp)) {
-    const error = new Error("Values for email and otp must be provided");
-    error.status = 400;
-    throw error;
+    return handleError("Values for email and otp must be provided", 400);
   }
 
   const matchedOTPRecord = await OTP.findOne({ email });
 
   if (!matchedOTPRecord) {
-    const error = new Error("No OTP record found");
-    error.status = 404;
-    throw error;
+    return handleError("OTP record found", 404);
   }
 
   const { expiresAt } = matchedOTPRecord;
 
   if (expiresAt < Date.now()) {
     await OTP.deleteOne({ email });
-    throw new Error("Code has expired. Please, request for a new one.");
+    return handleError("Code has expired. Please, request for a new one", 410);
   }
 
   const hashedOTP = matchedOTPRecord.otp;
