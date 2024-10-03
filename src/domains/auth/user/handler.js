@@ -9,15 +9,24 @@ const handleSignup = async (req, res) => {
     if (error) {
       throw error;
     }
-    
-    const newUser = await createNewUser(value);
-    await sendVerificationOTPEmail(value.email);
+
+    const sendOtp = process.env.SEND_OTP === undefined ? 'false' : process.env.SEND_OTP.toLowerCase();
+    // si sendOtp es "false" tonces "verified" es "true"
+    // ya que no se envía un mail para verificarlo
+    const verified = sendOtp === 'true' ? false : true;
+
+    const newUser = await createNewUser({ ...value, verified });
+
+    if (sendOtp === 'true') {
+      await sendVerificationOTPEmail(value.email);
+    }
 
     return res.status(200).json(newUser);
   } catch (error) {
     return handleErrorResponse(res, error);
   }
 };
+
 
 const handleLogin = async (req, res) => {
   try {

@@ -19,11 +19,13 @@ const checkUserExists = async (username, email) => {
 };
 
 const createNewUser = async (value) => {
-  const { username, email, password, userType, name, surname, birthdate } = value;
+  const { username, email, password, userType, name, surname, birthdate, verified } = value;
 
   await checkUserExists(username, email);
   const hashedPassword = await hashData(password);
   const [capitalizedName, capitalizedSurname] = capitalize({ data: [name, surname] });
+
+  console.log(verified)
 
   const newUser = new User({
     username, 
@@ -32,11 +34,13 @@ const createNewUser = async (value) => {
     userType,
     name: capitalizedName,
     surname: capitalizedSurname, 
-    birthdate
+    birthdate,
+    verified: Boolean(verified)
   });
 
   return await newUser.save();
 };
+
 
 const authenticateUser = async (value) => {
   const { username, email, password } = value;

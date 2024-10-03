@@ -40,12 +40,21 @@ const getJobs = async ({ offset = 0, limit = 10, username }) => {
 
   if (!jobs.length) handleError("No jobs found", 404);
 
+  console.log(jobs)
+
   return {
     jobs: jobs.map(job => ({
       id: _encrypt(job._id.toString()),
       title: job.title,
+      category: job.category,
       description: job.description,
-      publisher: job.publisher
+      publisher: job.publisher,
+      publisherId: job.userId,
+      createdAt: job.createdAt,
+      applicants: job.applicantsId,
+      finalApplicant: job.finalApplicant,
+      finished: job.finished,
+      isUnlisted: job.unlisted
     })),
     totalJobs
   };

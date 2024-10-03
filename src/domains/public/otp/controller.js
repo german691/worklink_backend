@@ -1,17 +1,19 @@
 import OTP from "./model.js";
 import generateOtp from "./../../../util/generateOtp.js";
-import sendEmail from "./../../../util/sendEmail.js";
 import { hashData, verifyHashedData } from "./../../../util/hashData.js";
 import { handleError } from "../../../util/errorHandler.js";
-const { AUTH_EMAIL } = process.env;
+const { AUTH_EMAIL, SEND_OTP } = process.env;
 
 const sendOTP = async ({ email, subject, message, duration }) => {
   if (!(email && subject && message)) {
     return handleError("Missing values for email, subject or message", 400);
   }
 
+  // Eliminar cualquier OTP existente para este correo
   await OTP.deleteOne({ email });
+
   const generatedOtp = await generateOtp();
+
   const emailOptions = {
     from: AUTH_EMAIL,
     to: email,
@@ -19,7 +21,11 @@ const sendOTP = async ({ email, subject, message, duration }) => {
     html: `<p>${message}</p><p><b>${generatedOtp}</b></p><p>Este código expira en <b>${duration} hora(s)</b>.</p>`,
   };
 
-  await sendEmail(emailOptions);
+  // Importar condicionalmente el módulo sendEmail si SEND_OTP es 'true'
+  if (SEND_OTP === 'true') {
+    const { default: sendEmail } = await import("./../../../util/sendEmail.js");
+    await sendEmail(emailOptions);
+  }
 
   const hashedOTP = await hashData(generatedOtp);
   const newOTP = new OTP({
@@ -59,5 +65,3 @@ const deleteOTP = async (email) => {
 };
 
 export { sendOTP, verifyOTP, deleteOTP };
-
-
