@@ -11,10 +11,6 @@ const UserSchema = new Schema({
   birthdate: { type: Date, required: true }, 
   verified: { type: Boolean, default: false },
   token: String,
-  // Esto es innecesario por el momento
-  // address: String,
-  // phone: String,
-  // info: String,
   isActive: { type: Boolean, default: true },
 });
 

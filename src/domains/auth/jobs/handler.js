@@ -184,18 +184,6 @@ export const handleMarkJobAsCompleted = async (req, res) => {
   }
 };
 
-export const handleCreateCategory = async (req, res) => {
-  try {
-    await categorySetterSchema.validateAsync(req.body);
-    const { category } = req.body;
-
-    const createdCategory = await createNewCategory({ category });
-    res.status(201).json(createdCategory);
-  } catch (error) {
-    return handleErrorResponse(res, error);
-  }
-};
-
 export const handleGetCategories = async (req, res) => {
   try {
     const categories = await getCategories();

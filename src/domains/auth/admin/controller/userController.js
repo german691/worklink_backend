@@ -29,23 +29,30 @@ export const updateUserRole = async (userId, newRole) => {
   return await user.save();
 };
 
-export const createNewUser = async (userData) => {
-  const { username, password, role, email } = userData;
-  if (!username || !password || !email) handleError("Missing required fields", 400);
-  
-  const existingUser = await User.findOne({ username });
-  if (existingUser) handleError("Username already taken", 409);
+const checkUserExists = async (username, email) => {
+  const [existingEmail, existingUsername] = await Promise.all([
+    User.findOne({ email }),
+    User.findOne({ username })
+  ]);
 
+  if (existingEmail) handleError("User with the provided email already exists", 409);
+  if (existingUsername) handleError("User with the provided username already exists", 409);
+};
+
+export const createNewUser = async (value) => {
+  const { username, email, password, verified } = value;
+
+  await checkUserExists(username, email);
   const hashedPassword = await hashData(password);
+
+  console.log(verified)
+
   const newUser = new User({
-    username,
-    password: hashedPassword,
-    email,
-    role,
-    isActive: true,
-    createdAt: new Date()
+    ...value,
+    password: hashedPassword, 
+    verified: Boolean(verified)
   });
-  
+
   return await newUser.save();
 };
 

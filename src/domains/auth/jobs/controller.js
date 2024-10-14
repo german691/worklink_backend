@@ -152,14 +152,6 @@ const leaveJob = async (data) => {
   return await fetchedJob.save();
 };
 
-const createNewCategory = async (data) => {
-  const { category } = data;
-  if (!category) handleError("Category name is required", 400);
-
-  const newCategory = new JobCategory({ category });
-  return await newCategory.save();
-};
-
 const getCategories = async () => {
   return await JobCategory.find();
 };

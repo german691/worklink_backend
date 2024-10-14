@@ -1,4 +1,5 @@
 import { handleErrorResponse } from "../../../../util/errorHandler.js";
+import { signupSchema } from "../../../../validation/userSchemes.js";
 import {
   getUsersInfo,
   getUserById,
@@ -43,7 +44,20 @@ export const handleUpdateUserRole = async (req, res) => {
 
 export const handleCreateNewUser = async (req, res) => {
   try {
-    const newUser = await createNewUser(req.body);
+    const { error, value } = signupSchema.validate(req.body);
+    if (error) {
+      throw error;
+    }
+
+    const sendOtp = process.env.SEND_OTP === undefined ? 'false' : process.env.SEND_OTP.toLowerCase();
+    const verified = sendOtp === 'true' ? false : true;
+
+    const newUser = await createNewUser({ ...value, verified });
+
+    if (sendOtp === 'true') {
+      await sendVerificationOTPEmail(email);
+    }
+
     res.status(201).json(newUser);
   } catch (error) {
     return handleErrorResponse(res, error);
@@ -52,7 +66,9 @@ export const handleCreateNewUser = async (req, res) => {
 
 export const handleUpdateUserInfo = async (req, res) => {
   try {
-    const updatedUser = await updateUserInfo(req.params.userId, req.body);
+    const userId = req.params?.userId;
+    if (!userId) return handleError("userId is required", 400);
+    const updatedUser = await updateUserInfo(userId, req.body);
     if (!updatedUser) return handleError("User not found", 404);
     res.status(200).json(updatedUser);
   } catch (error) {
@@ -62,7 +78,9 @@ export const handleUpdateUserInfo = async (req, res) => {
 
 export const handleDeactivateUser = async (req, res) => {
   try {
-    const updatedUser = await deactivateUser(req.params.userId);
+    const userId = req.params?.userId;
+    if (!userId) return handleError("userId is required", 400);
+    const updatedUser = await deactivateUser(userId);
     if (!updatedUser) return handleError("User not found", 404);
     res.status(200).json(updatedUser);
   } catch (error) {
@@ -72,7 +90,9 @@ export const handleDeactivateUser = async (req, res) => {
 
 export const handleReactivateUser = async (req, res) => {
   try {
-    const updatedUser = await reactivateUser(req.params.userId);
+    const userId = req.params?.userId;
+    if (!userId) return handleError("userId is required", 400);
+    const updatedUser = await reactivateUser(userId);
     if (!updatedUser) return handleError("User not found", 404);
     res.status(200).json(updatedUser);
   } catch (error) {
@@ -82,7 +102,10 @@ export const handleReactivateUser = async (req, res) => {
 
 export const handleUserPasswordReset = async (req, res) => {
   try {
-    const updatedUser = await forcePasswordReset(req.params.userId, req.body.newPassword);
+    const userId = req.params?.userId;
+    const newPassword = req.body?.newPassword;
+    if (!userId || !newPassword) return handleError("userId and newPassword fields are required", 400);
+    const updatedUser = await forcePasswordReset(userId, newPassword);
     if (!updatedUser) return handleError("User not found", 404);
     res.status(200).json(updatedUser);
   } catch (error) {
@@ -92,7 +115,9 @@ export const handleUserPasswordReset = async (req, res) => {
 
 export const handleGetUserActivityLogs = async (req, res) => {
   try {
-    const logs = await getUserActivityLogs(req.params.userId);
+    const userId = req.params?.userId;
+    if (!userId) return handleError("userId is required", 400);
+    const logs = await getUserActivityLogs(userId);
     res.status(200).json(logs);
   } catch (error) {
     return handleErrorResponse(res, error);
