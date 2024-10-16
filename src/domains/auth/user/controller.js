@@ -1,6 +1,7 @@
 import User from "./model.js";
 import { hashData, verifyHashedData } from "./../../../util/hashData.js";
 import createToken from "./../../../util/createToken.js";
+import mongoose from "mongoose";
 
 const handleError = (message, status) => {
   const error = new Error(message);
@@ -62,10 +63,16 @@ const authenticateUser = async (value) => {
   return { token, role: fetchedUser.userType };
 };
 
+const getCurrentUserInfo = async (currentUser) => {
+  const { userId } = currentUser;
+  const userDetails = await User.findOne({ _id: userId });
+  return userDetails;
+}
+
 const capitalize = ({ data }) => {
   return data.map(value =>
     value.toLowerCase().replace(/\b\w/g, letter => letter.toUpperCase())
   );
 };
 
-export { createNewUser, authenticateUser };
+export { createNewUser, authenticateUser, getCurrentUserInfo };

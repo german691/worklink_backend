@@ -1,5 +1,5 @@
 import { loginSchema, signupSchema } from "./../../../validation/userSchemes.js";
-import { createNewUser, authenticateUser } from "./controller.js";
+import { createNewUser, authenticateUser, getCurrentUserInfo } from "./controller.js";
 import { sendVerificationOTPEmail } from "./../../../domains/public/email_verification/controller.js";
 import { handleErrorResponse } from "../../../util/errorHandler.js";
 
@@ -27,7 +27,6 @@ const handleSignup = async (req, res) => {
   }
 };
 
-
 const handleLogin = async (req, res) => {
   try {
     const { error, value } = loginSchema.validate(req.body);
@@ -42,4 +41,13 @@ const handleLogin = async (req, res) => {
   }
 };
 
-export { handleSignup, handleLogin };
+const handleGetUserInfo = async (req, res) => {
+  try {
+    const userDetails = await getCurrentUserInfo(req.currentUser);
+    return res.status(200).json(userDetails);
+  } catch (error) {
+    return handleErrorResponse(res, error);
+  }
+}
+
+export { handleSignup, handleLogin, handleGetUserInfo };
