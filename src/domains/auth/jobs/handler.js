@@ -26,6 +26,7 @@ import {
   markJobAsCompleted,
 } from "./controller.js";
 
+// Filtros: username, open, in progress, finished
 export const handleGetJob = async (req, res) => {
   try {
     await getJobSchema.validateAsync(req.query);
@@ -139,8 +140,8 @@ export const handleApplyToJob = async (req, res) => {
     const { jobId } = req.params;
     const userId = req.currentUser.userId;
 
-    const appliedJob = await applyToJob({ jobId, userId });
-    res.status(200).json(appliedJob);
+    await applyToJob({ jobId, userId });
+    res.status(200).send();
   } catch (error) {
     return handleErrorResponse(res, error);
   }
@@ -152,8 +153,8 @@ export const handleLeaveJob = async (req, res) => {
     const { jobId } = req.params;
     const userId = req.currentUser.userId;
 
-    const leftJob = await leaveJob({ jobId, userId });
-    res.status(200).json(leftJob);
+    await leaveJob({ jobId, userId });
+    res.status(200).send();
   } catch (error) {
     return handleErrorResponse(res, error);
   }
@@ -165,8 +166,9 @@ export const handleSetFinalWorker = async (req, res) => {
     const { jobId } = req.params;
     const { userId } = req.body;
 
-    const updatedJob = await setFinalWorker({ userId, jobId, currentUserId: req.currentUser.userId });
-    res.status(200).json(updatedJob);
+    await setFinalWorker({ userId, jobId, currentUserId: req.currentUser.userId });
+
+    res.status(200).send();
   } catch (error) {
     return handleErrorResponse(res, error);
   }
@@ -177,8 +179,8 @@ export const handleMarkJobAsCompleted = async (req, res) => {
     await finishJobSchema.validateAsync(req.params);
     const { jobId } = req.params;
 
-    const completedJob = await markJobAsCompleted({ jobId, currentUserId: req.currentUser.userId });
-    res.status(200).json(completedJob);
+    await markJobAsCompleted({ jobId, currentUserId: req.currentUser.userId });
+    res.status(200).send();
   } catch (error) {
     return handleErrorResponse(res, error);
   }

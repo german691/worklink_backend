@@ -40,8 +40,6 @@ const getJobs = async ({ offset = 0, limit = 10, username }) => {
 
   if (!jobs.length) handleError("No jobs found", 404);
 
-  console.log(jobs)
-
   return {
     jobs: jobs.map(job => ({
       id: _encrypt(job._id.toString()),
@@ -51,7 +49,7 @@ const getJobs = async ({ offset = 0, limit = 10, username }) => {
       publisher: job.publisher,
       publisherId: job.userId,
       createdAt: job.createdAt,
-      applicants: job.applicantsId,
+      applicants: job.applicantsId.map(applicantId => _encrypt(applicantId.toString())),
       finalApplicant: job.finalApplicant,
       finished: job.finished,
       isUnlisted: job.unlisted
@@ -105,6 +103,11 @@ const setFinalWorker = async (data) => {
 
   const decryptedJobId = _decrypt(jobId);
   const fetchedJob = await verifyJobExists(decryptedJobId);
+
+  if (fetchedJob.finalApplicant) {
+    handleError("A final worker has already been selected for this job", 400);
+  }
+
   if (!fetchedJob.userId.equals(currentUserId)) handleError("Unauthorized access", 403);
 
   const isApplicant = await Job.findOne({

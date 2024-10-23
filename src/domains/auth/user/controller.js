@@ -1,7 +1,7 @@
 import User from "./model.js";
 import { hashData, verifyHashedData } from "./../../../util/hashData.js";
 import createToken from "./../../../util/createToken.js";
-import mongoose from "mongoose";
+import moment from 'moment'; 
 
 const handleError = (message, status) => {
   const error = new Error(message);
@@ -20,19 +20,20 @@ const checkUserExists = async (username, email) => {
 };
 
 const createNewUser = async (value) => {
-  const { username, email, password, name, surname, verified } = value;
+  const { username, email, password, name, surname, birthdate, verified } = value;
 
   await checkUserExists(username, email);
   const hashedPassword = await hashData(password);
   const [capitalizedName, capitalizedSurname] = capitalize({ data: [name, surname] });
 
-  console.log(verified)
+  const parsedBirthdate = moment(birthdate, 'DD-MM-YYYY').toDate(); 
 
   const newUser = new User({
     ...value,
     password: hashedPassword, 
     name: capitalizedName,
-    surname: capitalizedSurname, 
+    surname: capitalizedSurname,
+    birthdate: parsedBirthdate,  
     verified: Boolean(verified)
   });
 
