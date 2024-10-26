@@ -1,4 +1,4 @@
-import { _encrypt } from "../../../util/cryptData.js";
+import { _decrypt, _encrypt } from "../../../util/cryptData.js";
 import { handleErrorResponse } from "../../../util/errorHandler.js";
 import {
   applyToWorkSchema,
@@ -49,12 +49,14 @@ export const handleGetJobDetails = async (req, res) => {
   try {
     await findJobSchema.validateAsync(req.params);
     const { jobId } = req.params;
+    const { username } = req.body || null;
 
     if (!jobId) {
       return res.status(400).json({ status: 400, message: "JobId not provided" });
     }
 
-    const job = await getJobDetails(jobId);
+    const decryptedJobId = _decrypt(jobId);
+    const job = await getJobDetails({ jobId: decryptedJobId, username });
     if (!job) {
       return res.status(404).json({ status: 404, message: "Job not found" });
     }

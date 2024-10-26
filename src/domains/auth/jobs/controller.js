@@ -77,9 +77,49 @@ const getJobs = async ({ offset = 0, limit = 10, username }) => {
   };
 };
 
-const getJobDetails = async (data) => {
-  const decryptedJobId = _decrypt(data);
-  return await verifyJobExists(decryptedJobId);
+const getJobDetails = async ({ jobId, username }) => {
+  const user = username ? await verifyUserExists(username) : null;
+
+  const query = user ? { _id: jobId, userId: user._id } : { _id: jobId };
+  const job = await Job.findOne(query);
+
+  if (!job) handleError("Job not found", 404);
+
+  const obtainUserDetails = async (applicantId) => {
+    if (!applicantId) return null;
+
+    const user = await User.findById(applicantId);
+
+    if (user) {
+      return {
+        userId: _encrypt(applicantId.toString()),
+        username: user.username,
+        name: user.name,
+        surname: user.surname,
+        birthdate: user.birthdate
+      };
+    }
+    return null;
+  };
+
+  const jobWithDetails = {
+    id: _encrypt(job._id.toString()),
+    title: job.title,
+    category: job.category,
+    description: job.description,
+    publisher: job.publisher,
+    publisherId: job.userId,
+    createdAt: job.createdAt,
+    applicants: await Promise.all(job.applicantsId.map(obtainUserDetails)),
+    finalApplicant: await obtainUserDetails(job.finalApplicant),
+    finished: job.finished,
+    isUnlisted: job.unlisted
+  };
+
+  return {
+    job: jobWithDetails
+  };
+
 };
 
 const dropJob = async (data) => {
