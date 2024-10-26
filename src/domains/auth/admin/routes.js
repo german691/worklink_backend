@@ -137,7 +137,7 @@ router.delete("/jobs/:jobId", auth(["admin", "superadmin"]), handleDeleteJob);
 router.get("/job_filter", auth(["admin", "superadmin"]), handleFilterJobs);
 
 // Obtener categorías de trabajo
-router.get("/job_categories", auth(["admin", "superadmin"]), handleGetJobCategories);
+router.get("/job_categories", auth(), handleGetJobCategories);
 
 // Crear categiorías de trabajo ([] o "")
 router.post("/job_categories", auth(["admin", "superadmin"]), handleCreateJobCategory);

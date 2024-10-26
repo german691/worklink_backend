@@ -32,6 +32,6 @@ router.post("/:jobId/apply", auth(["worker"]), handleApplyToJob);
 router.delete("/:jobId/apply", auth(["worker"]), handleLeaveJob); 
 
 // Categories
-router.get("/categories", auth(["admin"]), handleGetCategories); 
+router.get("/categories", auth(), handleGetCategories); 
 
 export default router

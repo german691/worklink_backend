@@ -40,20 +40,39 @@ const getJobs = async ({ offset = 0, limit = 10, username }) => {
 
   if (!jobs.length) handleError("No jobs found", 404);
 
+  const obtainUserDetails = async (applicantId) => {
+    if (!applicantId) return null; 
+
+    const user = await User.findById(applicantId);
+
+    if (user) {
+      return {
+        userId: _encrypt(applicantId.toString()),
+        username: user.username,
+        name: user.name,
+        surname: user.surname,
+        birthdate: user.birthdate
+      }
+    }
+    return null;
+  } 
+
+  const jobsWithDetails = await Promise.all(jobs.map(async job => ({
+    id: _encrypt(job._id.toString()),
+    title: job.title,
+    category: job.category,
+    description: job.description,
+    publisher: job.publisher,
+    publisherId: job.userId,
+    createdAt: job.createdAt,
+    applicants: await Promise.all(job.applicantsId.map(obtainUserDetails)), 
+    finalApplicant: await obtainUserDetails(job.finalApplicant), 
+    finished: job.finished,
+    isUnlisted: job.unlisted
+  })));
+
   return {
-    jobs: jobs.map(job => ({
-      id: _encrypt(job._id.toString()),
-      title: job.title,
-      category: job.category,
-      description: job.description,
-      publisher: job.publisher,
-      publisherId: job.userId,
-      createdAt: job.createdAt,
-      applicants: job.applicantsId.map(applicantId => _encrypt(applicantId.toString())),
-      finalApplicant: job.finalApplicant,
-      finished: job.finished,
-      isUnlisted: job.unlisted
-    })),
+    jobs: jobsWithDetails,
     totalJobs
   };
 };

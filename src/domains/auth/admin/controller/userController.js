@@ -45,8 +45,6 @@ export const createNewUser = async (value) => {
   await checkUserExists(username, email);
   const hashedPassword = await hashData(password);
 
-  console.log(verified)
-
   const newUser = new User({
     ...value,
     password: hashedPassword, 
