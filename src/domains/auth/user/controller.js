@@ -26,8 +26,6 @@ const createNewUser = async (value) => {
   const hashedPassword = await hashData(password);
   const [capitalizedName, capitalizedSurname] = capitalize({ data: [name, surname] });
 
-  const parsedBirthdate = moment(birthdate, 'DD-MM-YYYY').toDate(); 
-
   const newUser = new User({
     ...value,
     password: hashedPassword, 

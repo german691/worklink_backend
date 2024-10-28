@@ -16,10 +16,6 @@ const UserSchema = new Schema({
   isActive: { type: Boolean, default: true },
 });
 
-UserSchema.methods.getFormattedBirthdate = function() {
-  return moment(this.birthdate).format('DD-MM-YYYY');
-};
-
 const User = mongoose.model("User", UserSchema);
 
 export default User;

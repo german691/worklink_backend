@@ -4,7 +4,7 @@ export const jobIdSchema = Joi.string().required();
 export const userIdSchema = Joi.string().required();
 
 export const getJobSchema = Joi.object({
-  page: Joi.number().integer().min(1).optional(),
+  offset: Joi.number().integer().min(1).optional(),
   limit: Joi.number().integer().min(1).optional(),
   username: Joi.string().optional()
 });
