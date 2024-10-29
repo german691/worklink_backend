@@ -1,7 +1,6 @@
 import User from "./model.js";
 import { hashData, verifyHashedData } from "./../../../util/hashData.js";
 import createToken from "./../../../util/createToken.js";
-import moment from 'moment'; 
 
 const handleError = (message, status) => {
   const error = new Error(message);
