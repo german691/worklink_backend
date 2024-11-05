@@ -16,9 +16,9 @@ import {
 } from "./handler.js"; 
 
 // Public
-router.get("/", auth(), handleGetJob); 
-router.get("/:jobId", auth(), handleGetJobDetails); 
-router.get("/:jobId/applicants", auth(), handleGetJobApplicants); 
+router.get("/", handleGetJob); 
+router.get("/:jobId", handleGetJobDetails); 
+router.get("/:jobId/applicants", handleGetJobApplicants); 
 
 // Client-admin
 router.post("/", auth(["client"]), handlePostJob); 
