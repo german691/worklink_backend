@@ -15,6 +15,9 @@ import {
   handleGetCategories
 } from "./handler.js"; 
 
+// Categories
+router.get("/categories", handleGetCategories);
+
 // Public
 router.get("/", handleGetJob); 
 router.get("/:jobId", handleGetJobDetails); 
@@ -31,7 +34,4 @@ router.patch("/:jobId/finish", auth(["client"]), handleMarkJobAsCompleted);
 router.post("/:jobId/apply", auth(["worker"]), handleApplyToJob); 
 router.delete("/:jobId/apply", auth(["worker"]), handleLeaveJob); 
 
-// Categories
-router.get("/categories", auth(), handleGetCategories); 
-
-export default router
+export default router;
