@@ -19,7 +19,7 @@ const checkUserExists = async (username, email) => {
 };
 
 const createNewUser = async (value) => {
-  const { username, email, password, name, surname, birthdate, verified } = value;
+  const { username, email, password, name, surname, verified } = value;
 
   await checkUserExists(username, email);
   const hashedPassword = await hashData(password);
@@ -30,7 +30,6 @@ const createNewUser = async (value) => {
     password: hashedPassword, 
     name: capitalizedName,
     surname: capitalizedSurname,
-    birthdate: parsedBirthdate,  
     verified: Boolean(verified)
   });
 
